@@ -52,16 +52,16 @@ class Events(commands.Cog):
             loop=asyncio.get_event_loop()
         )
 
-        user_id = os.getenv("TWITTER_USER_ID")
-        #hashtag = os.getenv("TWITTER_SEARCH")
+        # user_id = os.getenv("TWITTER_USER_ID")
+        hashtag = os.getenv("TWITTER_FILTER")
 
         # Escucha la cuenta de twitter en búsqueda de nuevos twitts
         streamingApi = tweepy.Stream(auth=api.auth, listener=stream)
 
         # Busca en la cuenta especificada los tweets con el hashtag definido
         streamingApi.filter(
-            follow=[user_id],
-            # track=[hashtag],
+            # follow=[user_id],
+            track=[hashtag],
             is_async=True
         )
 
@@ -79,7 +79,7 @@ class TweetsListener(tweepy.StreamListener):
         self.discord_post = discord_post
         self.loop = loop
         self.user_url = os.getenv("TWITTER_USER_URL")
-        self.hashtag = os.getenv("TWITTER_SEARCH")
+        # self.hashtag = os.getenv("TWITTER_FILTER")
 
     def on_connect(self):
         # Me avisa que se conectó y todo esta OK
@@ -92,14 +92,18 @@ class TweetsListener(tweepy.StreamListener):
         # Obtengo el id del tweet
         id_tweet = status.id
 
-        # Filtro para para encontrar el hashtag definido
-        filter_ = status.text.find(self.hashtag)
-        if filter_ != -1:
-            # Creo el link al tweet con una cuenta determinada
-            url_tweet = f"{self.user_url}/status/{id_tweet}"
+        # Envío el mensaje
+        url_tweet = f"{self.user_url}/status/{id_tweet}"
+        self.send_message(url_tweet)
 
-            # Envío el mensaje
-            self.send_message(url_tweet)
+        # Filtro para para encontrar el hashtag definido
+        # filter_ = status.text.find(self.hashtag)
+        # if filter_ != -1:
+        #     # Creo el link al tweet con una cuenta determinada
+        #     url_tweet = f"{self.user_url}/status/{id_tweet}"
+        #
+        #     # Envío el mensaje
+        #     self.send_message(url_tweet)
 
     def send_message(self, msg):
         asyncio.run_coroutine_threadsafe(
