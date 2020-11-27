@@ -132,7 +132,7 @@ TODO
 ## Notificaciones del server
 TODO
 
-## Recordatorios de eventos
+## Recordatorio de eventos
 TODO
 
 
