@@ -62,7 +62,7 @@ try:
     client.query(
         q.create_index(
             {
-                "name": "all_events_by_time_range",
+                "name": "all_events_by_time",
                 "source": q.collection("Events"),
                 "values": [
                     {"field": ["data", "time"]},
@@ -71,7 +71,7 @@ try:
             }
         )
     )
-    info_index(resp, "all_events_by_time_range")
+    info_index(resp, "all_events_by_time")
 except:
     print("The `all_events_by_time_range` Index already exists.")
 
@@ -82,7 +82,7 @@ try:
             {
                 "name": "events_by_author",
                 "source": q.collection("Events"),
-                "term": [
+                "terms": [
                     {"field": ["data", "author"]}
                 ]
             }
@@ -99,7 +99,7 @@ try:
             {
                 "name": "event_by_id_and_author",
                 "source": q.collection("Events"),
-                "term": [
+                "terms": [
                     {"field": ["ref"]},
                     {"field": ["data", "author"]}
                 ]
@@ -128,7 +128,7 @@ try:
         q.create_index(
             {
                 "name": "all_faqs",
-                "source": q.collection("Events")
+                "source": q.collection("FAQs")
             }
         )
     )
