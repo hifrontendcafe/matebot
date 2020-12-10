@@ -1,5 +1,5 @@
 discord.py==1.5.1
 python-dotenv==0.15.0
 apscheduler==3.6.3
-faunadb==3.0.0
+faunadb==4.0.1
 tweepy==3.9.0
