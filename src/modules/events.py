@@ -60,7 +60,7 @@ class Events(commands.Cog):
 
         # Busca en la cuenta especificada los tweets con el hashtag definido
         streamingApi.filter(
-            # follow=[user_id],
+            #follow=[user_id],
             track=[hashtag],
             is_async=True
         )
@@ -79,6 +79,7 @@ class TweetsListener(tweepy.StreamListener):
         self.discord_post = discord_post
         self.loop = loop
         self.user_url = os.getenv("TWITTER_USER_URL")
+        self.user_id = os.getenv("TWITTER_USER_ID")
         # self.hashtag = os.getenv("TWITTER_FILTER")
 
     def on_connect(self):
@@ -89,19 +90,20 @@ class TweetsListener(tweepy.StreamListener):
         # Si se quiere guardar el tweet en una BD para procesamiento se debe hacer en esta función
         # Ésta función procesa los tweets en tiempo real
 
-        # Obtengo el id del tweet
-        id_tweet = status.id
+        if self.user_id == status.user.id:
+            # Obtengo el id del tweet
+            id_tweet = status.id
 
-        # Envío el mensaje
-        url_tweet = f"{self.user_url}/status/{id_tweet}"
-        self.send_message(url_tweet)
+            # Envío el mensaje
+            url_tweet = f"{self.user_url}/status/{id_tweet}"
+            self.send_message(url_tweet)
 
         # Filtro para para encontrar el hashtag definido
         # filter_ = status.text.find(self.hashtag)
         # if filter_ != -1:
         #     # Creo el link al tweet con una cuenta determinada
         #     url_tweet = f"{self.user_url}/status/{id_tweet}"
-        #
+
         #     # Envío el mensaje
         #     self.send_message(url_tweet)
 
