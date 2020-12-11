@@ -287,7 +287,7 @@ class database:
         '''
         self.bot = bot
 
-        DB_KEY = os.getenv("FAUNADB_SECKEY")
+        DB_KEY = os.getenv("FAUNADB_SECRET_KEY")
         self.client = FaunaClient(secret = DB_KEY)
 
     def load(self):
