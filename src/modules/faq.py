@@ -53,7 +53,7 @@ class FAQ(commands.Cog):
 !faq coworking: ¿Qué es el Coworking en FEC
 !faq roles: Que són y cómo se obtienen los roles
 !faq projects: Consulta sobre los proyectos grupales de desarrollo
-!faq study group: Consulta sobre los grupos de estudio
+!faq studygroup: Consulta sobre los grupos de estudio
 ```
                 '''
         await ctx.send(lines)
