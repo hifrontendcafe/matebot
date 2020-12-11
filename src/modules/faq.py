@@ -48,12 +48,12 @@ class FAQ(commands.Cog):
 !faq help: Ayuda del FAQ
 !faq all: Por DM recibís el FAQ completo
 !faq general: Preguntas generales sobre el uso de Discord y el servidor
-!faq english: Preguntas relacionadas a los eventos sobre Inglés
+!faq english: Preguntas relacionadas a los eventos para charlar en inglés
 !faq mentoring: Dudas sobre el sistema de mentorías
-!faq coworking: ¿Qué es el Coworking en FEC
+!faq coworking: ¿Qué es el Coworking en FEC?
 !faq roles: Que són y cómo se obtienen los roles
 !faq projects: Consulta sobre los proyectos grupales de desarrollo
-!faq study group: Consulta sobre los grupos de estudio
+!faq studygroup: Consulta sobre los grupos de estudio
 ```
                 '''
         await ctx.send(lines)
@@ -102,7 +102,7 @@ class FAQ(commands.Cog):
         Poscondición: El bot envía por DM el FAQ de general
         '''
         dataGen = []
-        dataPrint = ["", ""]
+        dataPrint = [""] * 2
 
         dataFAQ = self.db.load()
         dataGen = [data for data in dataFAQ if data['Category'] == 'General']
@@ -128,7 +128,7 @@ class FAQ(commands.Cog):
         Poscondición: El bot envía por DM el FAQ de english
         '''
         dataGen = []
-        dataPrint = ["", ""]
+        dataPrint = [""] * 2
 
         dataFAQ = self.db.load()
         dataGen = [data for data in dataFAQ if data['Category'] == 'English']
@@ -154,7 +154,7 @@ class FAQ(commands.Cog):
         Poscondición: El bot envía por DM el FAQ de mentoring
         '''
         dataGen = []
-        dataPrint = ["", ""]
+        dataPrint = [""] * 2
 
         dataFAQ = self.db.load()
         dataGen = [data for data in dataFAQ if data['Category'] == 'Mentoring']
@@ -180,7 +180,7 @@ class FAQ(commands.Cog):
         Poscondición: El bot envía por DM el FAQ de coworking
         '''
         dataGen = []
-        dataPrint = ["", ""]
+        dataPrint = [""] * 2
 
         dataFAQ = self.db.load()
         dataGen = [data for data in dataFAQ if data['Category'] == 'Coworking']
@@ -206,7 +206,7 @@ class FAQ(commands.Cog):
         Poscondición: El bot envía por DM el FAQ de roles
         '''
         dataGen = []
-        dataPrint = ["", ""]
+        dataPrint = [""] * 2
 
         dataFAQ = self.db.load()
         dataGen = [data for data in dataFAQ if data['Category'] == 'Roles']
@@ -232,7 +232,7 @@ class FAQ(commands.Cog):
         Poscondición: El bot envía por DM el FAQ de projects
         '''
         dataGen = []
-        dataPrint = ["", ""]
+        dataPrint = [""] * 2
 
         dataFAQ = self.db.load()
         dataGen = [data for data in dataFAQ if data['Category'] == 'Projects']
@@ -258,7 +258,7 @@ class FAQ(commands.Cog):
         Poscondición: El bot envía por DM el FAQ de english
         '''
         dataGen = []
-        dataPrint = ["", ""]
+        dataPrint = [""] * 2
 
         dataFAQ = self.db.load()
         dataGen = [data for data in dataFAQ if data['Category'] == 'Study-Group']
