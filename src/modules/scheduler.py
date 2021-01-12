@@ -73,24 +73,23 @@ class Scheduler(commands.Cog):
         # Programo el evento
         doc = await self.reminder.add(date, time, time_zone, channel.id, text, ctx.author)
 
-        # Informo si hubo algun error de formato, si la fecha expiró o la info
-        # del evento generado
-        if doc is None:
-            msg = "Por favor verifique el formato introducido."
-            await ctx.send(msg, delete_after=60)
-        elif doc is []:
+        # Informo si la fecha expiró, la info del evento generado
+        # o si hubo algun error de formato
+        if type(doc) is list:
             msg = "Hey, el evento ya paso!! revisa la fecha."
             await ctx.send(msg, delete_after=60)
-        else:
+        elif type(doc) is dict:
             msg = self._generate_msg(doc, "Evento agregado")
             await ctx.send(msg, delete_after=60)
-
+        else:
+            msg = "Por favor verifique el formato introducido."
+            await ctx.send(msg, delete_after=60)
 
     @sched.command()
     async def list(self, ctx):
         """Comando sched list
 
-        Muestra todos eventos programados que están vigentes.
+        Muestra todos los eventos programados que están vigentes.
         """
         log.info("Scheduler list")
 
