@@ -32,7 +32,7 @@ if secret is None:
 
 client = FaunaClient(secret=secret)
 
-# # Creo la colección de Events
+# Creo la colección de Events
 try:
     resp = client.query(
         q.create_collection({
