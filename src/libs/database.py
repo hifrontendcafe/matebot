@@ -4,9 +4,10 @@ import logging
 import functools
 from faunadb import query as q
 from faunadb.client import FaunaClient
-#from faunadb.objects import Ref
+# from faunadb.objects import Ref
 
 log = logging.getLogger(__name__)
+
 
 def log_debug(func):
     """
@@ -20,12 +21,14 @@ def log_debug(func):
         return value
     return wrapper
 
+
 class Database:
     """Clase utilizada para definir querys
 
     Para obtener el id de un documento:
     doc["ref"].id()
     """
+
     def __init__(self, secret: str):
         self.q = q
         self.client = FaunaClient(secret=secret)
@@ -146,7 +149,8 @@ class Database:
                 lambda _, ref: q.get(ref),
                 q.paginate(
                     q.range(
-                        q.match(q.index(index)), q.time("2020-01-01T00:00:00Z"), q.now()
+                        q.match(q.index(index)), q.time(
+                            "2020-01-01T00:00:00Z"), q.now()
                     )
                 )
             )
@@ -218,7 +222,8 @@ class Database:
                 lambda _, ref: q.delete(ref),
                 q.paginate(
                     q.range(
-                        q.match(q.index(index)), q.time("2020-01-01T00:00:00Z"), q.time_add(q.now(), 1, "minutes")
+                        q.match(q.index(index)), q.time(
+                            "2020-01-01T00:00:00Z"), q.time_add(q.now(), 1, "minutes")
                     )
                 )
             )
@@ -232,15 +237,46 @@ class Database:
         return self.client.query(
             q.delete(
                 q.select(['data', 0], q.paginate(
-                        q.match(q.index(index), [q.ref(q.collection(collection), id_), author])
-                    )
+                    q.match(q.index(index), [
+                            q.ref(q.collection(collection), id_), author])
+                )
                 )
             )
         )
 
-            # q.map_(
-            #     lambda ref: q.delete(ref),
-            #     q.paginate(
-            #         q.match(q.index(index), [q.ref(q.collection(collection), id_), author])
-            #     )
-            # )
+        # q.map_(
+        #     lambda ref: q.delete(ref),
+        #     q.paginate(
+        #         q.match(q.index(index), [q.ref(q.collection(collection), id_), author])
+        #     )
+        # )
+
+    def get_poll_by_discord_id(self, id):
+        '''
+        Descripción: Obtengo (si existe) la encuesta con una id específica
+        '''
+        # Indexacion de datos
+        poll = self.client.query(
+            q.get(
+                q.match(
+                    q.index("poll_by_discord_id"),
+                    id
+                )
+            )
+        )
+        return poll
+
+    def update_with_ref(self, ref, data):
+        """Actualiza datos
+
+        Actualiza los datos dentro de un documento, pero mantiene los
+        campos que no estan definidos en los nuevos datos
+
+        update("my_collection", 1234567890, {"name": "John", "age": 30})
+        """
+        return self.client.query(
+            q.update(
+                ref,
+                {"data": data}
+            )
+        )
