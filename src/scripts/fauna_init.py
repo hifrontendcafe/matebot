@@ -17,6 +17,7 @@ def info_collection(resp, collection: str):
     else:
         print(f"Error creating `{collection}` collection.")
 
+
 def info_index(resp, index: str):
     if resp:
         print(f"Index `{index}` created.")
@@ -138,3 +139,39 @@ try:
 
 except:
     print("The `all_faqs` index already exists.")
+
+# Creo la colección de Polls
+try:
+    resp = client.query(
+        q.create_collection({
+            "name": "Polls",
+        })
+    )
+    info_collection(resp, "Polls")
+except:
+    print("The `Polls` collection already exists.")
+
+# Index general para buscar una encuesta por id de comentario de discord
+try:
+    resp = client.query(
+        q.create_index(
+            {
+                "name": "poll_by_discord_id",
+                "source": q.collection("Polls"),
+                "terms": [{"field": ["data", "id"]}],
+                "values": [
+                    {"field": ["data", "type"]},
+                    {"field": ["data", "is_active"]},
+                    {"field": ["data", "users_voted"]},
+                    {"field": ["data", "votes_count"]},
+                    {"field": ["data", "question"]},
+                    {"field": ["data", "author"]},
+                    {"field": ["data", "avatar_url"]},
+                ],
+            }
+        )
+    )
+    info_index(resp, "poll_by_discord_id")
+
+except:
+    print("The `poll_by_discord_id` index already exists.")

@@ -5,3 +5,4 @@ from .welcome import Welcome
 from .faq import FAQ
 from .events import Events
 from .scheduler import Scheduler
+from .polls import Polls
