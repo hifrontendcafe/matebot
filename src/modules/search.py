@@ -32,7 +32,7 @@ class Search(commands.Cog):
         data = await search_engine.search(query)
 
         # Mando un aviso si no obtengo resultados
-        if data is []:
+        if not data:
             await ctx.send("No se encontraron resultados, por favor intente con otra query", delete_after=60)
             return
 
