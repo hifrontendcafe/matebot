@@ -15,45 +15,45 @@ log = logging.getLogger(__name__)
 
 #///---- Clase ----///
 class FAQ(commands.Cog):
+    PREFIX = os.getenv("DISCORD_PREFIX")
     '''
     Consulta y edición de FAQ
     '''
     def __init__(self, bot):
         '''
-        __init__ del bot (importa este codigo como modulo al bot)
+        __init__ del bot
         '''
         self.bot = bot
         self.db = database(bot)
 
-    #! !faq
     #! Comando faq
     @commands.group()
-    async def faq(self, ctx):
+    async def faq(self, ctx, PREFIX):
         '''
-        Comando !faq
+        Comando faq
         '''
         if ctx.invoked_subcommand is None:
-            await ctx.send("Este comando no existe! Tipea `!faq help` para ver los comandos disponibles :D")
+            await ctx.send(f"Este comando no existe! Tipea `{PREFIX}faq help` para ver los comandos disponibles :D")
 
     #! Subcomando help
     @faq.command()
-    async def help(self, ctx):
+    async def help(self, ctx, PREFIX):
         '''
         Descripción: Ayuda de FAQ
-        Precondicion: Escribir en un canal !faq help
+        Precondicion: Escribir en un canal {PREFIX}faq help
         Poscondición: El bot escribe lista de comandos con descripción
         '''
-        lines = '''
+        lines = f'''
 ```
-!faq help: Ayuda del FAQ
-!faq all: Por DM recibís el FAQ completo
-!faq general: Preguntas generales sobre el uso de Discord y el servidor
-!faq english: Preguntas relacionadas a los eventos para charlar en inglés
-!faq mentoring: Dudas sobre el sistema de mentorías
-!faq coworking: ¿Qué es el Coworking en FEC?
-!faq roles: Que són y cómo se obtienen los roles
-!faq projects: Consulta sobre los proyectos grupales de desarrollo
-!faq studygroup: Consulta sobre los grupos de estudio
+{PREFIX}faq help: Ayuda del FAQ
+{PREFIX}faq all: Por DM recibís el FAQ completo
+{PREFIX}faq general: Preguntas generales sobre el uso de Discord y el servidor
+{PREFIX}faq english: Preguntas relacionadas a los eventos para charlar en inglés
+{PREFIX}faq mentoring: Dudas sobre el sistema de mentorías
+{PREFIX}faq coworking: ¿Qué es el Coworking en FEC?
+{PREFIX}faq roles: Que són y cómo se obtienen los roles
+{PREFIX}faq projects: Consulta sobre los proyectos grupales de desarrollo
+{PREFIX}faq studygroup: Consulta sobre los grupos de estudio
 ```
                 '''
         await ctx.send(lines)
@@ -63,7 +63,7 @@ class FAQ(commands.Cog):
     async def all(self, ctx):
         '''
         Descripción: FAQ completo por DM
-        Precondición: Escribir en un canal !faq all
+        Precondición: Escribir en un canal {PREFIX}faq all
         Poscondición: El bot envía por DM el FAQ
         '''
         dataPrint = [""] * 4
@@ -98,7 +98,7 @@ class FAQ(commands.Cog):
     async def general(self, ctx):
         '''
         Descripción: Consulta de DB sobre categoría General
-        Precondición: Escribir en un canal !faq general
+        Precondición: Escribir en un canal {PREFIX}faq general
         Poscondición: El bot envía por DM el FAQ de general
         '''
         dataGen = []
@@ -124,7 +124,7 @@ class FAQ(commands.Cog):
     async def english(self, ctx):
         '''
         Descripción: Consulta de DB sobre categoría English
-        Precondición: Escribir en un canal !faq english
+        Precondición: Escribir en un canal {PREFIX}faq english
         Poscondición: El bot envía por DM el FAQ de english
         '''
         dataGen = []
@@ -150,7 +150,7 @@ class FAQ(commands.Cog):
     async def mentoring(self, ctx):
         '''
         Descripción: Consulta de DB sobre categoría Mentoring
-        Precondición: Escribir en un canal !faq mentoring
+        Precondición: Escribir en un canal {PREFIX}faq mentoring
         Poscondición: El bot envía por DM el FAQ de mentoring
         '''
         dataGen = []
@@ -176,7 +176,7 @@ class FAQ(commands.Cog):
     async def coworking(self, ctx):
         '''
         Descripción: Consulta de DB sobre categoría Coworking
-        Precondición: Escribir en un canal !faq coworking
+        Precondición: Escribir en un canal {PREFIX}faq coworking
         Poscondición: El bot envía por DM el FAQ de coworking
         '''
         dataGen = []
@@ -202,7 +202,7 @@ class FAQ(commands.Cog):
     async def roles(self, ctx):
         '''
         Descripción: Consulta de DB sobre categoría Roles
-        Precondición: Escribir en un canal !faq roles
+        Precondición: Escribir en un canal {PREFIX}faq roles
         Poscondición: El bot envía por DM el FAQ de roles
         '''
         dataGen = []
@@ -228,7 +228,7 @@ class FAQ(commands.Cog):
     async def projects(self, ctx):
         '''
         Descripción: Consulta de DB sobre categoría Projects
-        Precondición: Escribir en un canal !faq projects
+        Precondición: Escribir en un canal {PREFIX}faq projects
         Poscondición: El bot envía por DM el FAQ de projects
         '''
         dataGen = []
@@ -254,7 +254,7 @@ class FAQ(commands.Cog):
     async def studygroup(self, ctx):
         '''
         Descripción: Consulta de DB sobre categoría English
-        Precondición: Escribir en un canal !faq english
+        Precondición: Escribir en un canal {PREFIX}faq english
         Poscondición: El bot envía por DM el FAQ de english
         '''
         dataGen = []
