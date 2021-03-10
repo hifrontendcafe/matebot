@@ -15,7 +15,6 @@ log = logging.getLogger(__name__)
 
 #///---- Clase ----///
 class FAQ(commands.Cog):
-    PREFIX = os.getenv("DISCORD_PREFIX")
     '''
     Consulta y edición de FAQ
     '''
@@ -28,21 +27,23 @@ class FAQ(commands.Cog):
 
     #! Comando faq
     @commands.group()
-    async def faq(self, ctx, PREFIX):
+    async def faq(self, ctx):
         '''
         Comando faq
         '''
+        PREFIX = os.getenv("DISCORD_PREFIX")
         if ctx.invoked_subcommand is None:
             await ctx.send(f"Este comando no existe! Tipea `{PREFIX}faq help` para ver los comandos disponibles :D")
 
     #! Subcomando help
     @faq.command()
-    async def help(self, ctx, PREFIX):
+    async def help(self, ctx):
         '''
         Descripción: Ayuda de FAQ
         Precondicion: Escribir en un canal {PREFIX}faq help
         Poscondición: El bot escribe lista de comandos con descripción
         '''
+        PREFIX = os.getenv("DISCORD_PREFIX")
         lines = f'''
 ```
 {PREFIX}faq help: Ayuda del FAQ
