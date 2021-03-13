@@ -51,6 +51,7 @@ if __name__ == "__main__":
     bot.add_cog(modules.Scheduler(bot))
     bot.add_cog(modules.Polls(bot))
     bot.add_cog(modules.Search(bot))
+    bot.add_cog(modules.NewMembers(bot))
 
     log.info("Bot started ...")
     bot.run(TOKEN)
