@@ -7,3 +7,4 @@ from .events import Events
 from .scheduler import Scheduler
 from .polls import Polls
 from .search import Search
+from .newMembers import NewMembers
