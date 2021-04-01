@@ -10,8 +10,11 @@ COPY requirements.txt .env src/ ./
 RUN apk update \
     && apk add --no-cache gcc python3-dev musl-dev libc-dev
 
+# Actualizo pip
+RUN pip install --upgrade pip
+
 # Instalo los paquetes de python
-RUN pip3 install -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Inicio el bot
 CMD ["python3", "bot.py"]

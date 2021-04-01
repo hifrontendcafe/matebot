@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import os
 import logging
 import requests
+import urllib.parse as parse
 
 import discord
 from discord.ext import commands
@@ -36,8 +36,10 @@ class Search(commands.Cog):
             await ctx.send("No se encontraron resultados, por favor intente con otra query", delete_after=60)
             return
 
-        embed = discord.Embed(title="Busquedas Web", description=f"Resultados para: `{query}`", color=0x00c29d)
-        embed.set_thumbnail(url="https://i.postimg.cc/HWSB3vvv/fec-search-icon-256.png")
+        embed = discord.Embed(title="Busqueda Web", description=f"Resultados para: `{query}`", color=0x00c29d)
+        embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.avatar_url}")
+        embed.set_thumbnail(url="https://i.postimg.cc/G3syJrTj/fec-search-icon-square-256.png")
+        #embed.set_thumbnail(url="https://i.postimg.cc/HWSB3vvv/fec-search-icon-256.png")
 
         for d in data:
             embed.add_field(name=d[0], value=d[1], inline=False)
@@ -64,7 +66,7 @@ class DuckDuckGoSearch:
                 title = e.find("a", attrs={"class": "result__a"})
                 link = e.find("a", attrs={"class": "result__url"})
                 title = title.text.strip()
-                link = link.text.strip()
+                link = parse.quote(link.text.strip())
 
                 if title == "" or link == "":
                     continue
