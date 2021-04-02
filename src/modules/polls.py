@@ -52,9 +52,9 @@ class Polls(Cog):
                 ```md
 ### COMANDO {PREFIX}poll ###
 
-- {PREFIX}poll add: Agregar encuesta.
-- {PREFIX}poll close: Fializar encuesta.
 - {PREFIX}poll help: Muestra la ayuda.
+- {PREFIX}poll add: Agregar encuesta.
+- {PREFIX}poll close: Finalizar encuesta.
 
 Ejemplos:
 {PREFIX}poll add "Pregunta" -> (Encuesta simple, Sí o No)
@@ -88,7 +88,7 @@ Ejemplos:
                 "users_voted": [],
                 "votes_count": votes
             })
-
+        PREFIX = os.getenv("DISCORD_PREFIX")
         try:
             await ctx.message.delete()
             # Embed message
@@ -152,7 +152,7 @@ Ejemplos:
                 await ctx.channel.send("❌Cantidad de respuestas no válidas (mínimo 2 respuestas | máximo 10 respuestas)", delete_after=15)
 
             user = self.bot.get_user(ctx.author.id)
-            await user.send(f"Para cerrar la votación de la encuesta '{question}' usar el siguiente comando: \n``` !poll close {msg.id} ```")
+            await user.send(f"Para cerrar la votación de la encuesta '{question}' usar el siguiente comando: \n``` {PREFIX}poll close {msg.id} ```")
         except Exception as e:
             print(e)
 
