@@ -52,7 +52,7 @@ class DuckDuckGoSearch:
         self.url = "https://html.duckduckgo.com/html/?q="
 
     async def search(self, query, num=5):
-        res = requests.get(self.url + "".join(query), headers={'user-agent': 'matebot/0.0.1'})
+        res = requests.get(self.url + "".join(query), headers={'user-agent': 'Mozilla/5.0'})
         res.raise_for_status()
         soup = BeautifulSoup(res.text, "html.parser")
         elements = soup.find_all("div", attrs={"class": "result results_links results_links_deep web-result"})
@@ -63,15 +63,14 @@ class DuckDuckGoSearch:
                 break
 
             try:
-                title = e.find("a", attrs={"class": "result__a"})
-                link = e.find("a", attrs={"class": "result__url"})
-                title = title.text.strip()
-                link = parse.quote(link.text.strip())
+                data = e.find("a", attrs={"class": "result__a"})
+                title = data.text.strip()
+                link = parse.unquote(data['href'].rsplit("//duckduckgo.com/l/?uddg=")[1])
 
                 if title == "" or link == "":
                     continue
 
-                result.append((title, "https://" + link))
+                result.append((title, link))
 
             except:
                 continue
