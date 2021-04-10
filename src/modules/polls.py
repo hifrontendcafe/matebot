@@ -102,7 +102,7 @@ Ejemplos:
             # Verifies if no answers were provided, and creates a yes/no poll
             if not args:
                 pollEmbed.add_field(
-                    name="\u200b", value="**Opciones (1 voto disponible):**\n✅ Sí: 0  \n❎ No: 0", inline=False)
+                    name="\u200b", value="**Opciones (voto único):**\n✅ Sí: 0  \n❎ No: 0", inline=False)
                 msg = await ctx.channel.send(embed=pollEmbed)
                 votes_count = {
                     'Si': 0,
@@ -129,7 +129,7 @@ Ejemplos:
                             f"\n{emoji_number_list[idx]} {answer}: 0")
 
                     pollEmbed.add_field(
-                        name="**Opciones (1 voto disponible):**", value=poll_text, inline=False)
+                        name="**Opciones (voto único):**", value=poll_text, inline=False)
 
                     # Dict of answers for DB
                     votes_count = {}
