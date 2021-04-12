@@ -79,9 +79,9 @@ class NewMembers(commands.Cog):
             time_final = time()
             new_delta = time_final - time_zero
             if (delta > new_delta):
-                users -= 1
-            else:
                 users += 1
+            else:
+                users -= 1
             # cafe = self.bot.get_channel(594935077637718027) # FEC
             cafe = self.bot.get_channel(776196097131413534) # Canal de prueba
             for user in listUsers:
