@@ -1,0 +1,38 @@
+name: Deploy Matebot
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Build the docker image
+        run: docker build -t matebot-image:$(echo ${GITHUB_SHA} | cut -c1-8) .
+      - name: Stop the current container
+        continue-on-error: true
+        run: docker stop matebot
+      - name: Remove the current container
+        continue-on-error: true
+        run: docker rm matebot
+      - name: Remove old docker image
+        continue-on-error: true
+        run: docker rmi matebot-image:$(echo ${{ github.event.before }} | cut -c1-8)
+      - name: Run the new container
+        run: >
+          docker run -d --restart always
+          -e DISCORD_PREFIX=${{ secrets.DISCORD_PREFIX }}
+          -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
+          -e FAUNADB_SECRET_KEY=${{ secrets.FAUNADB_SECRET_KEY }}
+          -e EVENTS_CHANNEL_ID=${{ secrets.EVENTS_CHANNEL_ID }}
+          -e TWITTER_API_KEY=${{ secrets.TWITTER_API_KEY }}
+          -e TWITTER_API_SECRET=${{ secrets.TWITTER_API_SECRET }}
+          -e TWITTER_ACCESS_KEY=${{ secrets.TWITTER_ACCESS_KEY }}
+          -e TWITTER_ACCESS_SECRET=${{ secrets.TWITTER_ACCESS_SECRET }}
+          -e TWITTER_USER_ID=${{ secrets.TWITTER_USER_ID }}
+          -e TWITTER_USER_URL=${{ secrets.TWITTER_USER_URL }}
+          -e TWITTER_FILTER=${{ secrets.TWITTER_FILTER }}
+          --name matebot matebot-image:$(echo ${GITHUB_SHA} | cut -c1-8)
