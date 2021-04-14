@@ -4,7 +4,7 @@ FROM python:3.8-alpine
 WORKDIR /bot
 
 # Copio requirements.txt y el contenido de src/ en /bot
-COPY requirements.txt .env src/ ./
+COPY requirements.txt src/ ./
 
 # Instalo algunas dependencias porque las necesitan algunos paquetes de python
 RUN apk update \
