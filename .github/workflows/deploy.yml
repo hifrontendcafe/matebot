@@ -13,12 +13,15 @@ jobs:
       - name: Build the docker image
         run: docker build -t matebot-image:$(echo ${GITHUB_SHA} | cut -c1-8) .
       - name: Stop the current container
+        continue-on-error: true
         run: docker stop matebot
       - name: Remove the current container
-        if: always()
+        continue-on-error: true
         run: docker rm matebot
+      - name: Remove old docker image
+        continue-on-error: true
+        run: docker rmi matebot-image:$(echo ${{ github.event.before }} | cut -c1-8)
       - name: Run the new container
-        if: always()
         run: >
           docker run -d --restart always
           -e DISCORD_PREFIX=${{ secrets.DISCORD_PREFIX }}
@@ -33,5 +36,3 @@ jobs:
           -e TWITTER_USER_URL=${{ secrets.TWITTER_USER_URL }}
           -e TWITTER_FILTER=${{ secrets.TWITTER_FILTER }}
           --name matebot matebot-image:$(echo ${GITHUB_SHA} | cut -c1-8)
-      - name: Remove old docker image
-        run: docker rmi matebot-image:$(git rev-parse HEAD^ | cut -c1-8)
