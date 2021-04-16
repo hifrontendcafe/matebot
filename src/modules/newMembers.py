@@ -89,7 +89,12 @@ class NewMembers(commands.Cog):
                 newUsers += f'{user} '
             listUsers = []
             self.update_list(listUsers, users, time_final, new_delta)
+<<<<<<< HEAD
             await cafe.send(f'''Welcome {newUsers}!\nPueden visitar el canal {random.choice(messages)} {impostor}''')
+=======
+            await cafe.send(f'''Welcome {newUsers}!
+            Pueden visitar el canal <#747925827265495111> para ver más información sobre la comunidad <:fecimpostor:755971090471321651>''')
+>>>>>>> 1b3a7a2 (FIX: Cambio mensaje de bienvenida)
             newUsers = ''
             await cafe.send(random.choice(gif))
         else:
