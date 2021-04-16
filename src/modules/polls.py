@@ -71,7 +71,7 @@ Ejemplos:
 
     #! Subcomando add
     @poll.command()
-    @has_permissions(manage_messages=True)
+    @has_permissions(manage_messages=False)
     async def add(self, ctx, question, *args):
         '''
         Agregar poll
@@ -163,7 +163,7 @@ Ejemplos:
             await ctx.channel.send("No tienes permiso para crear encuestas :slight_frown:", delete_after=15)
 
     @poll.command()
-    @has_permissions(manage_messages=True)
+    @has_permissions(manage_messages=False)
     async def close(self, ctx, poll_id):
         emoji_number_list = ["1️⃣", "2️⃣", "3️⃣", "4️⃣",
                              "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
