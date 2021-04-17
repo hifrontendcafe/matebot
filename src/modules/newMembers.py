@@ -25,17 +25,6 @@ class NewMembers(commands.Cog):
         self.db = DB(secret)
         self.get_list()
 
-        try:
-            self.db.create('Users', {
-                "new_users_id": [],
-                "user_condition": 10,
-                "time_sec": time(),
-                "time_delta": 12000
-            })
-            print('Se creó documento en colección Users')
-        except Exception as error:
-            print(f'Hubo un error en create_list: {error}')
-
     def get_list(self):
         try:
             doc = self.db.get('Users', '292960205647380995')["data"]
