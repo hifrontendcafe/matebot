@@ -60,9 +60,10 @@ class NewMembers(commands.Cog):
             'https://tenor.com/LhvI.gif'
             ]
         messages = [
-            '<#747925827265495111> para ver más información sobre la comunidad',
-            '<#748183026244255824> para ver las normas de convivencia',
-            '<#762660432380821525> y conseguir el rol para participar en los grupos de estudio'
+            '<#747925827265495111> para ver más información sobre la comunidad!',
+            '<#748183026244255824> para ver las normas de convivencia!',
+            '<#762660432380821525> y conseguí el rol para participar en los grupos de estudio!'
+            '<#832978005483716619> si no se presentaron. Queremos conocerlos!'
         ]
 
         listUsers.append(newMember)
@@ -78,12 +79,7 @@ class NewMembers(commands.Cog):
                 newUsers += f'{user} '
             listUsers = []
             self.update_list(listUsers, users, time_final, new_delta)
-<<<<<<< HEAD
             await cafe.send(f'''Welcome {newUsers}!\nPueden visitar el canal {random.choice(messages)} {impostor}''')
-=======
-            await cafe.send(f'''Welcome {newUsers}!
-            Pueden visitar el canal <#747925827265495111> para ver más información sobre la comunidad <:fecimpostor:755971090471321651>''')
->>>>>>> 1b3a7a2 (FIX: Cambio mensaje de bienvenida)
             newUsers = ''
             await cafe.send(random.choice(gif))
         else:
