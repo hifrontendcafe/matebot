@@ -62,7 +62,7 @@ class NewMembers(commands.Cog):
         messages = [
             '<#747925827265495111> para ver más información sobre la comunidad!',
             '<#748183026244255824> para ver las normas de convivencia!',
-            '<#762660432380821525> y podrán recibir noticias de los grupos de estudio!'
+            '<#762660432380821525> y podrán recibir noticias de los grupos de estudio!',
             '<#748547143157022871> si no se presentaron. Queremos conocerlos!'
         ]
 
