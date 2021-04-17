@@ -23,22 +23,18 @@ class NewMembers(commands.Cog):
         secret = os.getenv("FAUNADB_SECRET_KEY")
         self.bot = bot
         self.db = DB(secret)
-
         self.get_list()
 
-        # TODO: Mejorar esta parte comentatada para que se ejecute una vez
-        # def create_list():  # Creo documento en users si no existe
-        #     try:
-        #         self.db.create('Users', {
-        #             "new_users_id": [],
-        #             "user_condition": 10,
-        #             "time_sec": time(),
-        #             "time_delta": 12000
-        #         })
-        #         print('Se creó documento en colección Users')
-        #     except Exception as error:
-        #         print(f'Hubo un error en create_list: {error}')
-        # create_list()
+        try:
+            self.db.create('Users', {
+                "new_users_id": [],
+                "user_condition": 10,
+                "time_sec": time(),
+                "time_delta": 12000
+            })
+            print('Se creó documento en colección Users')
+        except Exception as error:
+            print(f'Hubo un error en create_list: {error}')
 
     def get_list(self):
         try:
@@ -65,6 +61,7 @@ class NewMembers(commands.Cog):
         package = self.get_list()
         listUsers, users, time_zero, delta = package["new_users_id"], package["user_condition"], package["time_sec"], package["time_delta"]
         newUsers = ''
+        impostor = '<:fecimpostor:755971090471321651>'
         gif = [
             'https://tenor.com/S1Pf.gif',
             'https://tenor.com/sXS8.gif',
@@ -73,6 +70,11 @@ class NewMembers(commands.Cog):
             'https://tenor.com/bhJM0.gif',
             'https://tenor.com/LhvI.gif'
             ]
+        messages = [
+            '<#747925827265495111> para ver más información sobre la comunidad',
+            '<#748183026244255824> para ver las normas de convivencia',
+            '<#762660432380821525> y conseguir el rol para participar en los grupos de estudio'
+        ]
 
         listUsers.append(newMember)
         if (len(listUsers) == users):
@@ -82,14 +84,12 @@ class NewMembers(commands.Cog):
                 users += 1
             else:
                 users -= 1
-            # cafe = self.bot.get_channel(594935077637718027) # FEC
-            cafe = self.bot.get_channel(776196097131413534) # Canal de prueba
+            cafe = self.bot.get_channel(594935077637718027) # FEC
             for user in listUsers:
                 newUsers += f'{user} '
             listUsers = []
             self.update_list(listUsers, users, time_final, new_delta)
-            await cafe.send(f'''Welcome {newUsers}!
-            Pueden visitar el canal <#747925827265495111> para ver más información sobre la comunidad <:fecimpostor:755971090471321651>''')
+            await cafe.send(f'''Welcome {newUsers}!\nPueden visitar el canal {random.choice(messages)} {impostor}''')
             newUsers = ''
             await cafe.send(random.choice(gif))
         else:
