@@ -50,7 +50,7 @@ Uso:
 3. Si es un error, decinos el detalle del error. 
 4. Un screenshot o el código en un editor online como Codepen (https://codepen.io/) es ideal.
 5. Si deseas compartir el código en el mensaje envuélvelo siempre en triple comilla invertida (`).
-6. Contanos qué has intentando y qué no te funcionó.
+6. Contanos qué has intentado y qué no te funcionó.
 ```Para más información pasate por <#747925827265495111>
                 """
             await ctx.channel.send(lines)
