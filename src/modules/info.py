@@ -26,7 +26,7 @@ class Info(Cog):
         self.PREFIX = os.getenv("DISCORD_PREFIX")
 
     def validateDiscordUser(self, user):
-        regex = re.compile(r"\<\@\!\d+\>")
+        regex = re.compile(r"\<\@(\!|.)\d+\>")
         valid = re.fullmatch(regex, user)
         return valid
 
