@@ -1,6 +1,7 @@
-discord.py==1.6.0
+discord.py==1.7.1
 python-dotenv==0.15.0
 apscheduler==3.6.3
-faunadb==4.0.1
+faunadb==4.1.0
 TwitterAPI==2.6.5
 beautifulsoup4==4.9.3
+dateparser==1.0.0
