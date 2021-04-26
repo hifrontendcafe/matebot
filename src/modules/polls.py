@@ -5,7 +5,7 @@ import re
 import os
 import logging
 
-import discord
+from discord import Embed
 from discord.ext.commands import Cog, has_permissions, group, MissingPermissions
 
 # Database
@@ -28,6 +28,12 @@ class Polls(Cog):
         secret = os.getenv("FAUNADB_SECRET_KEY")
         self.bot = bot
         self.db = DB(secret)
+
+
+    @staticmethod
+    def colour():
+        # return Colour.from_rgb(0, 235, 188).value
+        return 0x00ebbc
 
     #! !poll
     #! Comando poll
@@ -92,8 +98,8 @@ Ejemplos:
         try:
             await ctx.message.delete()
             # Embed message
-            pollEmbed = discord.Embed(
-                title=(f":clipboard: {question}"), color=60349)
+            pollEmbed = Embed(
+                title=(f":clipboard: {question}"), color=self.colour())
             pollEmbed.set_thumbnail(
                 url="https://res.cloudinary.com/sebasec/image/upload/v1614807768/Fec_with_Shadow_jq8ll8.png")
             pollEmbed.set_author(name="Encuesta")
@@ -177,8 +183,8 @@ Ejemplos:
                 }
             )
             # Send finish message
-            pollEmbed = discord.Embed(
-                title=f":clipboard: {poll['data']['question']}", color=60349)
+            pollEmbed = Embed(
+                title=f":clipboard: {poll['data']['question']}", color=self.colour())
             pollEmbed.set_thumbnail(
                 url="https://res.cloudinary.com/sebasec/image/upload/v1614807768/Fec_with_Shadow_jq8ll8.png")
             pollEmbed.set_author(name="Encuesta Finalizada")
@@ -210,7 +216,8 @@ Ejemplos:
         channel = self.bot.get_channel(payload.channel_id)
         msg = await channel.fetch_message(payload.message_id)
         # Check if reactined message was sended by the bot
-        if (msg.author == self.bot.user):
+        colour = msg.embeds[0].colour.value if len(msg.embeds) == 1 else Embed.Empty
+        if msg.author == self.bot.user and colour == self.colour():
             # Check if the reaction was added by the bot
             if (payload.user_id != self.bot.user.id):
                 # Search poll in DB
@@ -245,8 +252,8 @@ Ejemplos:
                                 except Exception as e:
                                     print(e)
                                 # Edit message
-                                pollEmbed = discord.Embed(
-                                    title=f":clipboard: {poll['data']['question']}", color=60349)
+                                pollEmbed = Embed(
+                                    title=f":clipboard: {poll['data']['question']}", color=self.colour())
                                 pollEmbed.set_thumbnail(
                                     url="https://res.cloudinary.com/sebasec/image/upload/v1614807768/Fec_with_Shadow_jq8ll8.png")
                                 pollEmbed.set_author(name="Encuesta")
@@ -273,8 +280,8 @@ Ejemplos:
                                                 }
                                             )
                                             # Edit and send brew install superfly/tap/flyctlmessage
-                                            pollEmbed = discord.Embed(
-                                                title=f":clipboard: {poll['data']['question']}", color=60349)
+                                            pollEmbed = Embed(
+                                                title=f":clipboard: {poll['data']['question']}", color=self.colour())
                                             pollEmbed.set_thumbnail(
                                                 url="https://res.cloudinary.com/sebasec/image/upload/v1614807768/Fec_with_Shadow_jq8ll8.png")
                                             pollEmbed.set_author(
