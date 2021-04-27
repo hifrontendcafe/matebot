@@ -46,8 +46,18 @@ class Scheduler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         secret = os.getenv("FAUNADB_SECRET_KEY")
+
+
         self.reminder = Reminder(secret)
 
+        # Nombre de la colección de la DB
+        self.reminder.collection = "Events"
+        # Mapeo de indices utilizados
+        self.reminder.indexes = {
+            'by_id_and_author': 'event_by_id_and_author',
+            'by_time': 'all_events_by_time',
+            'all': 'all_events'
+        }
         # Defino la función que se utiliza para ejecutar los eventos
         self.reminder.action = self.action
         # Defino los recodatorios
@@ -61,17 +71,14 @@ class Scheduler(commands.Cog):
             'OK': "\N{BALLOT BOX WITH CHECK}\N{VARIATION SELECTOR-16}",
             'CANCEL': "\N{NO ENTRY SIGN}"
         }
-        # self.sched_reaction = False
-        self.author = None
-        self.date_time = None
-        self.channel = None
-        self.content = None
+
 
     @staticmethod
     def colour():
         # green: 0x00c29d
         # red: 0xe62f48
         return Colour.purple().value
+
 
     @staticmethod
     def _process_text(text):
@@ -97,13 +104,19 @@ class Scheduler(commands.Cog):
         else:
             return date_time
 
+    @staticmethod
+    def _process_author(author):
+        match = re.search(r"\<\@(\!|.)(\d+)\>", author)
+        author_id = int(match.group(2))
+        return author_id
+
 
     @staticmethod
     def _process_channel(channel):
         match = re.search(r"\<\#(\d+)\>", channel)
         if match:
-            channel = match.group(1)
-            return channel
+            channel_id = int(match.group(1))
+            return channel_id
         else:
             return Error.CHANNEL
 
@@ -144,6 +157,7 @@ class Scheduler(commands.Cog):
         for field in fields:
             embed.add_field(name=field[0], value=field[1], inline=True)
         return embed
+
 
     @staticmethod
     def _check_permisson(author, channel):
@@ -214,8 +228,8 @@ class Scheduler(commands.Cog):
             return await ctx.send(embed=embed, delete_after=60)
 
         # Verifico el formato del channel
-        channel = self._process_channel(channel)
-        if channel is Error.CHANNEL:
+        channel_id = self._process_channel(channel)
+        if channel_id is Error.CHANNEL:
             embed = Embed(
                 title="Error",
                 description="Por favor, elija un canal válido.",
@@ -224,7 +238,7 @@ class Scheduler(commands.Cog):
             return await ctx.send(embed=embed, delete_after=60)
 
         # Verifico que el author tenga pemisos para escribir en el canal objetivo
-        if self._check_permisson(ctx.author, ctx.bot.get_channel(int(channel))) is False:
+        if self._check_permisson(ctx.author, ctx.bot.get_channel(channel_id)) is False:
             embed = Embed(
                 title="Error de permisos",
                 description="Ups lo siendo, necesita permisos para enviar mensajes a ese canal.",
@@ -232,15 +246,10 @@ class Scheduler(commands.Cog):
             )
             return await ctx.send(embed=embed, delete_after=60)
 
-        self.author = ctx.author
-        self.date_time = date_time
-        self.channel = channel
-        self.content = content
-
         fields = [
             ("Usuario", "<@!{}>".format(ctx.author.id)),
             ("Fecha", date_time.strftime("%Y-%m-%d | %H:%M | %z")),
-            ("Canal", "<#{}>".format(channel))
+            ("Canal", "<#{}>".format(channel_id))
         ]
 
         embed = Embed(
@@ -291,7 +300,7 @@ class Scheduler(commands.Cog):
             embed = self._generate_next(docs[0])
             await ctx.send(embed=embed, delete_after=60)
         else:
-            embed = Embed(title="Sin eventos")
+            embed = Embed(title="Sin eventos", color=self.colour())
             await ctx.send(embed=embed, delete_after=60)
 
 
@@ -377,14 +386,28 @@ class Scheduler(commands.Cog):
             # Check if the reaction was added by the bot
             if payload.user_id != self.bot.user.id:
                 if payload.emoji.name == self.emoji['OK']:
+                    # Recovery data from message
+                    fields = msg.embeds[0].fields
+                    str_author = fields[0].value
+                    str_date_time = fields[1].value
+                    str_channel = fields[2].value
+                    author_id = self._process_author(str_author)
+
+                    author = self.bot.get_user(author_id)
+                    date_time = datetime.strptime(str_date_time, "%Y-%m-%d | %H:%M | %z")
+                    channel_id = self._process_channel(str_channel)
+                    content = msg.embeds[0].description
+
                     PREFIX = os.getenv("DISCORD_PREFIX")
-                    await self.reminder.add(self.author, self.date_time, self.channel, self.content)
+
+                    doc = await self.reminder.add(author, date_time, str(channel_id), content)
                     await msg.delete()
                     embed = Embed(
                         title="Evento agregado con exito!",
-                        description=f"Puede ver sus eventos programados con: `{PREFIX}sched list`",
+                        description=f"Puede ver sus eventos programados con:\n`{PREFIX}sched list`",
                         color=self.colour()
                     )
+                    embed.set_footer(text=f"ID: {doc['ref'].id()}")
                     return await channel.send(embed=embed, delete_after=60)
 
                 if payload.emoji.name == self.emoji['CANCEL']:

@@ -21,6 +21,7 @@ log = logging.getLogger(__name__)
 #
 #     return my_custome_decorator
 
+
 class Reminder:
     """ Clase Reminder
 
@@ -34,6 +35,30 @@ class Reminder:
         # Arranco en Async Scheduler
         self.sched = AsyncIOScheduler()
         self.sched.start()
+
+
+    @property
+    def collection(self):
+        return self._collection
+
+
+    @collection.setter
+    def collection(self, value):
+        if not isinstance(value, str):
+            raise ValueError("The value must be a string")
+        self._collection = value
+
+
+    @property
+    def indexes(self):
+        return self._indexes
+
+
+    @indexes.setter
+    def indexes(self, value):
+        if not isinstance(value, dict):
+            raise ValueError("The value must be a dictionary")
+        self._indexes = value
 
 
     @property
@@ -64,7 +89,7 @@ class Reminder:
 
     def _remove_by_id(self, id_: str):
         try:
-            doc = self.db.delete("Events", id_)
+            doc = self.db.delete(self.collection, id_)
             log.info("hola: %s", doc)
             for job in doc['data']['jobs']:
                 self.sched.remove_job(job)
@@ -75,7 +100,7 @@ class Reminder:
 
     def _remove_by_id_and_author(self, id_: str, author: str):
         try:
-            doc = self.db.delete_by_id_and_author("Events", "event_by_id_and_author", id_, author)
+            doc = self.db.delete_by_id_and_author(self.collection, self.indexes['by_id_and_author'], id_, author)
             for job in doc['data']['jobs']:
                 self.sched.remove_job(job)
             return doc
@@ -84,7 +109,7 @@ class Reminder:
 
 
     async def _remove_old_event(self):
-        self.db.delete_by_expired_time("all_events_by_time")
+        self.db.delete_by_expired_time(self.indexes['by_time'])
 
 
     def _create_jobs(self, event):
@@ -120,7 +145,7 @@ class Reminder:
             "author": str(author),
             "author_id": str(author.id),
             "time": date_time,
-            "channel": int(channel),
+            "channel": str(channel),
             "content": content,
             "reminders": self.reminders,
         }
@@ -154,7 +179,7 @@ class Reminder:
             }
 
             # Genero un registro local
-            return self.db.create("Events", data)
+            return self.db.create(self.collection, data)
         except:
             # Si el formato de la fecha es incorrecto
             return None
@@ -170,7 +195,7 @@ class Reminder:
         actuliza la base de datos con los nuevos jobs_id
         """
 
-        docs = self.db.get_all("all_events")
+        docs = self.db.get_all(self.indexes['all'])
         new_docs = []
         for doc in docs['data']:
             event = {
@@ -185,14 +210,13 @@ class Reminder:
             new_docs.append((doc['ref'].id(), {"jobs": jobs_id}))
 
         # Actulizo la base de datos con los nuevos jobs_id
-        return self.db.update_all_jobs("Events", new_docs)
+        return self.db.update_all_jobs(self.collection, new_docs)
 
 
     async def list(self):
         """Lista todos los eventos programados"""
 
-        # events = self.db.get_by_author("events_by_author", author)
-        events = self.db.get_all_by_time("all_events_by_time")
+        events = self.db.get_all_by_time(self.indexes['by_time'])
         return events['data']
 
 
