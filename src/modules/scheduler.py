@@ -10,7 +10,6 @@ import dateparser
 from discord import Embed, Colour
 from discord.ext import commands
 
-from libs.help_generator import HelpGenerator
 from libs.reminder import Reminder
 
 from enum import Enum
