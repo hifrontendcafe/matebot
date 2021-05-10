@@ -6,7 +6,8 @@ import os
 import logging
 
 from discord import Embed
-from discord.ext.commands import Cog, has_permissions, group, MissingPermissions
+from discord.ext.commands import Cog, group
+# from discord.ext.commands import has_permissions, MissingPermissions
 
 # Database
 from libs.database import Database as DB
@@ -28,7 +29,6 @@ class Polls(Cog):
         secret = os.getenv("FAUNADB_SECRET_KEY")
         self.bot = bot
         self.db = DB(secret)
-
 
     @staticmethod
     def colour():
@@ -77,7 +77,7 @@ Ejemplos:
 
     #! Subcomando add
     @poll.command()
-    @has_permissions(manage_messages=False)
+    # @has_permissions(manage_messages=False)
     async def add(self, ctx, question, *args):
         '''
         Agregar poll
@@ -162,14 +162,14 @@ Ejemplos:
         except Exception as e:
             print(e)
 
-    @add.error
-    async def add_error(self, ctx, error):
-        if isinstance(error, MissingPermissions):
-            await ctx.message.delete()
-            await ctx.channel.send("No tienes permiso para crear encuestas :slight_frown:", delete_after=15)
+    # @add.error
+    # async def add_error(self, ctx, error):
+    #     if isinstance(error, MissingPermissions):
+    #         await ctx.message.delete()
+    #         await ctx.channel.send("No tienes permiso para crear encuestas :slight_frown:", delete_after=15)
 
     @poll.command()
-    @has_permissions(manage_messages=False)
+    # @has_permissions(manage_messages=False)
     async def close(self, ctx, poll_id):
         emoji_number_list = ["1️⃣", "2️⃣", "3️⃣", "4️⃣",
                              "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
@@ -203,20 +203,21 @@ Ejemplos:
         except Exception as e:
             print(e)
 
-    @close.error
-    async def close_error(self, ctx, error):
-        if isinstance(error, MissingPermissions):
-            await ctx.message.delete()
-            await ctx.channel.send("No tienes permiso para cerrar encuestas :slight_frown:", delete_after=15)
+    # @close.error
+    # async def close_error(self, ctx, error):
+    #     if isinstance(error, MissingPermissions):
+    #         await ctx.message.delete()
+    #         await ctx.channel.send("No tienes permiso para cerrar encuestas :slight_frown:", delete_after=15)
 
     # On poll reaction:
     @Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        # Obtain reactioned message by id
+        # Obtain reacted message by id
         channel = self.bot.get_channel(payload.channel_id)
         msg = await channel.fetch_message(payload.message_id)
-        # Check if reactined message was sended by the bot
-        colour = msg.embeds[0].colour.value if len(msg.embeds) == 1 else Embed.Empty
+        # Check if reacted message was sended by the bot
+        colour = msg.embeds[0].colour.value if len(
+            msg.embeds) == 1 else Embed.Empty
         if msg.author == self.bot.user and colour == self.colour():
             # Check if the reaction was added by the bot
             if (payload.user_id != self.bot.user.id):
@@ -260,9 +261,9 @@ Ejemplos:
                                 pollEmbed.set_footer(
                                     text=poll['data']['author'], icon_url=poll['data']['avatar_url'])
                                 pollEmbed.add_field(
-                                    name="\u200b", value=f"**Opciones (1 voto disponible):**\n:white_check_mark: Sí: {votes['Si']} \n:negative_squared_cross_mark: No: {votes['No']}", inline=False)
+                                    name="\u200b", value=f"**Opciones (voto único):**\n:white_check_mark: Sí: {votes['Si']} \n:negative_squared_cross_mark: No: {votes['No']}", inline=False)
                                 await msg.edit(embed=pollEmbed)
-                            # Check if poll type is "custom" (personalizated answers poll)
+                            # Check if poll type is "custom" (personalized answers poll)
                             elif (p_type == "custom"):
                                 emoji_number_list = ["1️⃣", "2️⃣", "3️⃣", "4️⃣",
                                                      "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
@@ -279,7 +280,6 @@ Ejemplos:
                                                     "votes_count": votes
                                                 }
                                             )
-                                            # Edit and send brew install superfly/tap/flyctlmessage
                                             pollEmbed = Embed(
                                                 title=f":clipboard: {poll['data']['question']}", color=self.colour())
                                             pollEmbed.set_thumbnail(
@@ -293,7 +293,7 @@ Ejemplos:
                                                 poll_text += (
                                                     f"\n{emoji_number_list[idx]} {answer}: {votes[listVotes[idx]]}")
                                             pollEmbed.add_field(
-                                                name="**Opciones (1 voto disponible):**", value=poll_text, inline=False)
+                                                name="**Opciones (voto único):**", value=poll_text, inline=False)
                                             await msg.edit(embed=pollEmbed)
                                         except Exception as e:
                                             print(e)
