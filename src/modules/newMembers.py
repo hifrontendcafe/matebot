@@ -58,7 +58,7 @@ class NewMembers(commands.Cog):
             'https://tenor.com/bkDo3.gif',
             'https://tenor.com/bhJM0.gif',
             'https://tenor.com/LhvI.gif'
-            ]
+            ] # Esta lista la dejo, pero ya no se usa mas en el servidor
         messages = [
             '<#747925827265495111> para ver más información sobre la comunidad!',
             '<#748183026244255824> para ver las normas de convivencia!',
@@ -81,6 +81,6 @@ class NewMembers(commands.Cog):
             self.update_list(listUsers, users, time_final, new_delta)
             await cafe.send(f'''Welcome {newUsers}!\nPueden visitar el canal {random.choice(messages)} {impostor}''')
             newUsers = ''
-            await cafe.send(random.choice(gif))
+            # await cafe.send(random.choice(gif))
         else:
             self.update_list(listUsers, users, time_zero, delta)
