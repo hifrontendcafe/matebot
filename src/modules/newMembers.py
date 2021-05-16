@@ -62,8 +62,8 @@ class NewMembers(commands.Cog):
         messages = [
             '<#747925827265495111> para ver más información sobre la comunidad!',
             '<#748183026244255824> para ver las normas de convivencia!',
-            '<#762660432380821525> y conseguí el rol para participar en los grupos de estudio!'
-            '<#832978005483716619> si no se presentaron. Queremos conocerlos!'
+            '<#762660432380821525> y podrán recibir noticias de los grupos de estudio!',
+            '<#748547143157022871> si no se presentaron. Queremos conocerlos!'
         ]
 
         listUsers.append(newMember)

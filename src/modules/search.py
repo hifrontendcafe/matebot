@@ -25,6 +25,7 @@ class Search(commands.Cog):
         Busca y muestra resultados de la web.
         """
 
+        await ctx.message.delete()
         query = " ".join(query)
         log.info(f"Search: {query}")
 
