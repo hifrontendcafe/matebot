@@ -1,4 +1,4 @@
-discord.py==1.7.1
+discord.py==1.7.2
 python-dotenv==0.15.0
 apscheduler==3.6.3
 faunadb==4.1.0

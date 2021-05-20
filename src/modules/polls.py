@@ -216,8 +216,9 @@ Ejemplos:
         channel = self.bot.get_channel(payload.channel_id)
         msg = await channel.fetch_message(payload.message_id)
         # Check if reacted message was sended by the bot
-        colour = msg.embeds[0].colour.value if len(
-            msg.embeds) == 1 else Embed.Empty
+        colour = msg.embeds[0].colour if len(msg.embeds) == 1 else Embed.Empty
+        if colour != Embed.Empty:
+            colour = colour.value
         if msg.author == self.bot.user and colour == self.colour():
             # Check if the reaction was added by the bot
             if (payload.user_id != self.bot.user.id):
