@@ -9,3 +9,4 @@ from .polls import Polls
 from .search import Search
 from .newMembers import NewMembers
 from .info import Info
+from .mentorships import Mentorship
