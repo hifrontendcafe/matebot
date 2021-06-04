@@ -53,6 +53,7 @@ if __name__ == "__main__":
     bot.add_cog(modules.Search(bot))
     bot.add_cog(modules.NewMembers(bot))
     bot.add_cog(modules.Info(bot))
+    bot.add_cog(modules.Mentorship(bot))
 
     log.info("Bot started ...")
     bot.run(TOKEN)
