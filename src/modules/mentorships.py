@@ -53,7 +53,7 @@ Uso:
         elif self.validateDiscordUser(user):
             userId = int(user[3:-1])
             member = await ctx.guild.fetch_member(userId)
-            menteeRole = discord.utils.get(ctx.guild.roles, name="Mentee")
+            menteeRole = discord.utils.get(ctx.guild.roles, name="Mentees")
             if menteeRole in member.roles:
                 await member.remove_roles(menteeRole)
                 await ctx.channel.send(f"Rol Mentee removido a {user}", delete_after=15)
