@@ -38,7 +38,7 @@ class NewMembers(commands.Cog):
         Poscondición: Se obtiene la lista de usuarios nuevos, la condición de usuarios nuevos, el tiempo de inicio y el tiempo de espera
         '''
         try:
-            doc = self.db.get('Users', '1')["data"]
+            doc = self.db.get('Users', '292960205647380995')["data"]
             return (doc)
         except Exception as error:
             print(f'Hubo un error en get_list: {error}')
@@ -51,7 +51,7 @@ class NewMembers(commands.Cog):
         Poscondición: La lista de usuarios nuevos, la condición de usuarios nuevos y el tiempo de espera se actualizan
         '''
         try:
-            self.db.update('Users', '1', {
+            self.db.update('Users', '292960205647380995', {
                 "new_users_id": listUsers,
                 "user_condition": users,
                 "time_sec": time_zero,
