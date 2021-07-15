@@ -43,6 +43,39 @@ class Database:
                 {"data": data}
             )
         )
+    
+    def create_collection(self, name: str) -> bool:
+        '''
+        Descripción: Creo una colección dado un nombre
+        Precondición: No debe existir la colección
+        Poscondición: Devuelve True si se creó la colección, de lo contrario False
+        '''
+        try:
+            self.client.query(q.create_collection({"name": name}))
+            log.info(f'Colleción {name} creada')
+            return True
+        except:
+            log.info(f'La colección {name} ya existe')
+            return False
+
+    def create_index(self, collection: str, id: int, data: dict) -> bool:
+        '''
+        Descripción: Creo un indice dado un id y un diccionario de datos en una colección
+        Precondición: No debe existir el indice con el id dado
+        Poscondición: Devuelve True si se creó el indice, de lo contrario False
+        '''
+        try:
+            self.client.query(
+                q.create(
+                    q.ref(q.collection(collection), id),
+                    {"data": data}
+                )
+            )
+            log.info(f'Se creó el index con id = {id} en la colección {collection}')
+            return True
+        except:
+            log.info(f'El index con id = {id} en la colección {collection} ya existe')
+            return False
 
     def get(self, collection: str, id_: str):
         """ Obtiene un documento de una colección por el id
