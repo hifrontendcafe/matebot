@@ -35,22 +35,23 @@ class Polls(Cog):
         # return Colour.from_rgb(0, 235, 188).value
         return 0x00ebbc
 
-    #! !poll
+    #! poll
     #! Comando poll
     @group()
     async def poll(self, ctx):
         '''
-        Comando !poll
+        Comando poll
         '''
+        PREFIX = os.getenv("DISCORD_PREFIX")
         if ctx.invoked_subcommand is None:
-            await ctx.send("Este comando no existe! Tipea `!poll help` para ver los comandos disponibles :D")
+            await ctx.send(f"Este comando no existe! Tipea `{PREFIX}poll help` para ver los comandos disponibles :D")
 
     #! Subcomando help
     @poll.command()
     async def help(self, ctx):
         '''
         Descripción: Ayuda de Encuestas
-        Precondicion: Escribir en un canal !poll help
+        Precondicion: Escribir en un canal `poll help`
         Poscondición: El bot escribe lista de comandos con descripción
         '''
         PREFIX = os.getenv("DISCORD_PREFIX")
