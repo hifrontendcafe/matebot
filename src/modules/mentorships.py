@@ -36,7 +36,7 @@ class Mentorship(Cog):
     #! Comando mentee
     @group()
     @has_role('Mentors')
-    async def mentee(self, ctx, user):
+    async def mentee(self, ctx, user, time=None, channel=None):
         '''
         Comando mentee
         '''
@@ -59,7 +59,19 @@ Uso:
                 await ctx.channel.send(f"Rol Mentee removido a {user}", delete_after=15)
             else:
                 await member.add_roles(menteeRole)
-                await ctx.channel.send(f"Rol Mentee agregado a {user}", delete_after=15)
+                if time is None and channel is None:
+                    await ctx.channel.send(f"Rol Mentee agregado a {user}", delete_after=15)
+                if time and channel is None:
+                    if time == "1":
+                        await ctx.channel.send(f"Hola {user}, {ctx.message.author.mention} te espera en {time} minuto <:fecfan:756224742771654696>")
+                    else:
+                        await ctx.channel.send(f"Hola {user}, {ctx.message.author.mention} te espera en {time} minutos <:fecfan:756224742771654696>")
+                if time and channel:
+                    if time == "1":
+                        await ctx.channel.send(f"Hola {user}, en {time} minuto {ctx.message.author.mention} te espera en la sala de voz de {channel} <:fecfan:756224742771654696>")
+                    else:
+                        await ctx.channel.send(f"Hola {user}, en {time} minutos {ctx.message.author.mention} te espera en la sala de voz de {channel} <:fecfan:756224742771654696>")
+
         else:
             await ctx.channel.send(f"Usuario no válido, por favor etiquetar a un usuario de discord con '@'", delete_after=15)
 
