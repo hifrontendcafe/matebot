@@ -9,6 +9,7 @@ import logging
 import discord
 from discord.embeds import Embed
 from discord.ext.commands import Cog, group, MissingRequiredArgument, has_role
+from discord.ext.commands.core import has_any_role
 from discord.ext.commands.errors import MissingRole
 import faunadb
 
@@ -157,7 +158,7 @@ Uso:
             raise error
 
     @mentee.command()
-    @has_role('Staff')
+    @has_any_role('Staff', 'admin-mentors')
     async def warn_rm(self, ctx, user):
         '''
         Comando mentee warn remove
@@ -208,7 +209,7 @@ Uso:
     async def mentee_error(self, ctx, error):
         if isinstance(error, MissingRole):
             await ctx.message.delete()
-            await ctx.channel.send("No tienes el rol Staff", delete_after=30)
+            await ctx.channel.send("No tienes el rol Staff/admin-mentors", delete_after=30)
         elif isinstance(error, MissingRequiredArgument):
             await ctx.message.delete()
             await ctx.channel.send("Por favor, etiquetar al usuario al que desea quitar una penalización.", delete_after=30)
@@ -216,7 +217,7 @@ Uso:
             raise error
 
     @mentee.command()
-    @has_role('Staff')
+    @has_any_role('Staff', 'admin-mentors')
     async def warn_ls(self, ctx):
         '''
         Comando mentee warn list
@@ -240,6 +241,6 @@ Uso:
     async def mentee_error(self, ctx, error):
         if isinstance(error, MissingRole):
             await ctx.message.delete()
-            await ctx.channel.send("No tienes el rol Staff", delete_after=30)
+            await ctx.channel.send("No tienes el rol Staff/admin-mentors", delete_after=30)
         else:
             raise error
