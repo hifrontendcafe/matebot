@@ -43,7 +43,7 @@ class Database:
                 {"data": data}
             )
         )
-    
+
     def create_collection(self, name: str) -> bool:
         '''
         Descripción: Creo una colección dado un nombre
@@ -71,10 +71,12 @@ class Database:
                     {"data": data}
                 )
             )
-            log.info(f'Se creó el index con id = {id} en la colección {collection}')
+            log.info(
+                f'Se creó el index con id = {id} en la colección {collection}')
             return True
         except:
-            log.info(f'El index con id = {id} en la colección {collection} ya existe')
+            log.info(
+                f'El index con id = {id} en la colección {collection} ya existe')
             return False
 
     def get(self, collection: str, id_: str):
@@ -275,3 +277,33 @@ class Database:
                 {"data": data}
             )
         )
+
+    def get_mentee_by_discord_id(self, id):
+        '''
+        Descripción: Obtengo (si existe) un mentor penalizado con una id específica
+        '''
+
+        # Indexacion de datos
+        user = self.client.query(
+            q.get(
+                q.match(
+                    q.index("mentee_by_discord_id"),
+                    id
+                )
+            )
+        )
+        return user
+
+    def get_all_warned_mentees(self):
+        '''
+        Descripción: Obtengo la lista completa de mentees penalizados
+        '''
+        # Indexacion de datos
+        users = self.client.query(
+            q.get(
+                q.match(
+                    q.index("all_warned_mentees"),
+                )
+            )
+        )
+        return users

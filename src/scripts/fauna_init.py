@@ -175,3 +175,49 @@ try:
 
 except:
     print("The `poll_by_discord_id` index already exists.")
+
+# Creo la colección de Mentorados con warnings
+try:
+    resp = client.query(
+        q.create_collection({
+            "name": "Mentorias",
+        })
+    )
+    info_collection(resp, "Mentorias")
+except:
+    print("The `Mentorias` collection already exists.")
+
+# Index general para buscar una penalización de mentorías por id de usuario de discord
+try:
+    resp = client.query(
+        q.create_index(
+            {
+                "name": "mentee_by_discord_id",
+                "source": q.collection("Mentorias"),
+                "terms": [{"field": ["data", "id"]}],
+                "values": [
+                    {"field": ["data", "warned_user"]},
+                    {"field": ["data", "warns_quantity"]},
+                ],
+            }
+        )
+    )
+    info_index(resp, "mentee_by_discord_id")
+
+except:
+    print("The `mentee_by_discord_id` index already exists.")
+
+# Index general para buscar todas las personas penalizadas de mentorías
+try:
+    resp = client.query(
+        q.create_index(
+            {
+                "name": "all_warned_mentees",
+                "source": q.collection("Mentorias")
+            }
+        )
+    )
+    info_index(resp, "all_warned_mentees")
+
+except:
+    print("The `all_warned_mentees` index already exists.")
