@@ -180,12 +180,23 @@ except:
 try:
     resp = client.query(
         q.create_collection({
-            "name": "Mentorias",
+            "name": "Mentorships",
         })
     )
-    info_collection(resp, "Mentorias")
+    info_collection(resp, "Mentorships")
 except:
-    print("The `Mentorias` collection already exists.")
+    print("The `Mentorships` collection already exists.")
+
+# Creo la colección de Mentorados con warnings
+try:
+    resp = client.query(
+        q.create_collection({
+            "name": "Mentorship_Warns",
+        })
+    )
+    info_collection(resp, "Mentorship_Warns")
+except:
+    print("The `Mentorship_Warns` collection already exists.")
 
 # Index general para buscar una penalización de mentorías por id de usuario de discord
 try:
@@ -193,7 +204,7 @@ try:
         q.create_index(
             {
                 "name": "mentee_by_discord_id",
-                "source": q.collection("Mentorias"),
+                "source": q.collection("Mentorship_Warns"),
                 "terms": [{"field": ["data", "id"]}],
                 "values": [
                     {"field": ["data", "warned_user"]},
@@ -213,7 +224,7 @@ try:
         q.create_index(
             {
                 "name": "all_warned_mentees",
-                "source": q.collection("Mentorias")
+                "source": q.collection("Mentorship_Warns")
             }
         )
     )
