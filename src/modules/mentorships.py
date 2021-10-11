@@ -334,14 +334,16 @@ Uso:
             mentee = self.db.get_mentee_by_discord_id(userId)
 
             if mentee['data']['warns_quantity'] > 0:
+                staffRole = discord.utils.get(ctx.guild.roles, name="Staff")
                 # Send message
                 embed = Embed(title=f"Solicitud de mentoría rechazada",
-                              description=f"¡Hola! {member.mention} ha sido penalizado por no cumplir el código de conducta, debes cancelar la misma via Calendly.", color=0x00ebbc)
+                              description=f"¡Hola! {member.mention} la mentoría no se llevara a cabo ya que anteriormente has sido penalizado por no cumplir el código de conducta. Si crees que fue un error, comunícate con {staffRole.mention}.", color=0x00ebbc)
                 embed.add_field(name="ID del usuario",
                                 value=userId, inline=True)
                 embed.set_footer(
                     text=ctx.author, icon_url=ctx.author.avatar_url)
                 await ctx.send(embed=embed)
+                await ctx.send(f"{ctx.author.mention} recordá que debes cancelar la mentoría via Calendly.", delete_after=30)
             else:
                 mentorship_register(
                     self, userId, ctx.message.author.id, ctx.message.author.display_name, userId, member.display_name)
