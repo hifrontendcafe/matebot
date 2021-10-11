@@ -62,14 +62,22 @@ class Mentorship(Cog):
                     await ctx.channel.send(f"Rol Mentee agregado a {user}", delete_after=30)
                 if time and channel is None:
                     if time == "1":
-                        await ctx.channel.send(f"Hola {user}, {ctx.message.author.mention} te espera en {time} minuto <:fecfan:756224742771654696>")
+                        embed = Embed(title=f"Recordatorio",
+                                      description=f"Hola {user}, {ctx.message.author.mention} te espera en {time} minuto <:fecfan:756224742771654696>", color=0x298AFF)
+                        await ctx.send(embed=embed)
                     else:
-                        await ctx.channel.send(f"Hola {user}, {ctx.message.author.mention} te espera en {time} minutos <:fecfan:756224742771654696>")
+                        embed = Embed(title=f"Recordatorio",
+                                      description=f"Hola {user}, {ctx.message.author.mention} te espera en {time} minutos <:fecfan:756224742771654696>", color=0x298AFF)
+                        await ctx.send(embed=embed)
                 if time and channel:
                     if time == "1":
-                        await ctx.channel.send(f"Hola {user}, en {time} minuto {ctx.message.author.mention} te espera en la sala de voz de {channel} <:fecfan:756224742771654696>")
+                        embed = Embed(title=f"Recordatorio",
+                                      description=f"Hola {user}, en {time} minuto {ctx.message.author.mention} te espera en la sala de voz de {channel} <:fecfan:756224742771654696>", color=0x298AFF)
+                        await ctx.send(embed=embed)
                     else:
-                        await ctx.channel.send(f"Hola {user}, en {time} minutos {ctx.message.author.mention} te espera en la sala de voz de {channel} <:fecfan:756224742771654696>")
+                        embed = Embed(title=f"Recordatorio",
+                                      description=f"Hola {user}, en {time} minutos {ctx.message.author.mention} te espera en la sala de voz de {channel} <:fecfan:756224742771654696>", color=0x298AFF)
+                        await ctx.send(embed=embed)
         else:
             await ctx.channel.send(f"Usuario no válido, por favor etiquetar a un usuario de discord con '@'", delete_after=30)
 
@@ -134,7 +142,7 @@ Uso:
 
             # Send warn message
             embed = Embed(title=f"{member.display_name} ha sido penalizado/a",
-                          description=f"Cantidad de penalizaciones: {mentee['data']['warns_quantity'] + 1}", color=0x00ebbc)
+                          description=f"Cantidad de penalizaciones: {mentee['data']['warns_quantity'] + 1}", color=0xFF6B00)
             embed.add_field(name="ID del usuario",
                             value=userId, inline=True)
             embed.set_footer(
@@ -147,7 +155,7 @@ Uso:
                        member.display_name, 1)
                 # Send warn message
                 embed = discord.Embed(title=f"{member.display_name} ha sido penalizado/a",
-                                      description="Cantidad de penalizaciones: 1", color=0x00ebbc)
+                                      description="Cantidad de penalizaciones: 1", color=0xFF6B00)
                 embed.add_field(name="ID del usuario",
                                 value=userId, inline=True)
                 embed.set_footer(
@@ -268,7 +276,7 @@ Uso:
             mentee = self.db.get_mentee_by_discord_id(userId)
             # Send message
             embed = Embed(title=f"Información de {member.display_name}",
-                          description=f"Cantidad de penalizaciones: {mentee['data']['warns_quantity']}", color=0x00ebbc)
+                          description=f"Cantidad de penalizaciones: {mentee['data']['warns_quantity']}", color=0xBD00FF)
             embed.add_field(name="ID del usuario",
                             value=userId, inline=True)
             embed.set_footer(
@@ -279,7 +287,7 @@ Uso:
             if type(e) is faunadb.errors.NotFound:
                 # Send message
                 embed = discord.Embed(title=f"Información de {member.display_name}",
-                                      description="No hay datos registrados.", color=0x00ebbc)
+                                      description="No hay datos registrados.", color=0xBD00FF)
                 embed.add_field(name="ID del usuario",
                                 value=userId, inline=True)
                 embed.set_footer(
@@ -337,7 +345,7 @@ Uso:
                 staffRole = discord.utils.get(ctx.guild.roles, name="Staff")
                 # Send message
                 embed = Embed(title=f"Solicitud de mentoría rechazada",
-                              description=f"¡Hola! {member.mention} la mentoría no se llevara a cabo ya que anteriormente has sido penalizado por no cumplir el código de conducta. Si crees que fue un error, comunícate con {staffRole.mention}.", color=0x00ebbc)
+                              description=f"¡Hola! {member.mention} la mentoría no se llevara a cabo ya que anteriormente has sido penalizado por no cumplir el código de conducta. Si crees que fue un error, comunícate con {staffRole.mention}.", color=0xFF006B)
                 embed.add_field(name="ID del usuario",
                                 value=userId, inline=True)
                 embed.set_footer(
