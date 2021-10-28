@@ -7,6 +7,7 @@ import os
 import logging
 
 import discord
+from discord import message
 from discord.embeds import Embed
 from discord.ext.commands import Cog, group, MissingRequiredArgument
 from discord.ext.commands.core import has_any_role
@@ -61,23 +62,17 @@ class Mentorship(Cog):
                 if time is None and channel is None:
                     await ctx.channel.send(f"Rol Mentee agregado a {user}", delete_after=30)
                 if time and channel is None:
-                    if time == "1":
-                        embed = Embed(title=f"Recordatorio",
-                                      description=f"Hola {user}, {ctx.message.author.mention} te espera en {time} minuto <:fecfan:756224742771654696>", color=0x298AFF)
-                        await ctx.send(embed=embed)
-                    else:
-                        embed = Embed(title=f"Recordatorio",
-                                      description=f"Hola {user}, {ctx.message.author.mention} te espera en {time} minutos <:fecfan:756224742771654696>", color=0x298AFF)
-                        await ctx.send(embed=embed)
+                    message = f"""
+**Recordatorio**
+Hola {user}, {ctx.message.author.mention} te espera en {time} minuto{"" if time == "1" else "s"} <:fecfan:756224742771654696>
+"""
+                    await ctx.channel.send(message)
                 if time and channel:
-                    if time == "1":
-                        embed = Embed(title=f"Recordatorio",
-                                      description=f"Hola {user}, en {time} minuto {ctx.message.author.mention} te espera en la sala de voz de {channel} <:fecfan:756224742771654696>", color=0x298AFF)
-                        await ctx.send(embed=embed)
-                    else:
-                        embed = Embed(title=f"Recordatorio",
-                                      description=f"Hola {user}, en {time} minutos {ctx.message.author.mention} te espera en la sala de voz de {channel} <:fecfan:756224742771654696>", color=0x298AFF)
-                        await ctx.send(embed=embed)
+                    message = f"""
+**Recordatorio**
+Hola {user}, en {time} minuto{"" if time == "1" else "s"} {ctx.message.author.mention} te espera en la sala de voz de {channel} <:fecfan:756224742771654696>
+"""
+                    await ctx.channel.send(message)
         else:
             await ctx.channel.send(f"Usuario no válido, por favor etiquetar a un usuario de discord con '@'", delete_after=30)
 
@@ -326,14 +321,14 @@ Uso:
             })
 
         async def success_message(self, ctx, member, userId):
-            # Send message
-            embed = Embed(title=f"Solicitud de mentoria exitosa",
-                          description=f"¡Hola! La mentoría de {member.mention} ha sido registrada satisfactoriamente.", color=0x00ebbc)
-            embed.add_field(name="ID del usuario",
-                            value=userId, inline=True)
-            embed.set_footer(
-                text=ctx.author, icon_url=ctx.author.avatar_url)
-            await ctx.send(embed=embed)
+            message = f"""
+**Solicitud de mentoría exitosa**
+¡Hola! La mentoría de {member.mention} ha sido registrada satisfactoriamente.
+
+**ID del usuario**
+{userId}
+"""
+            await ctx.channel.send(message)
 
         try:
             await ctx.message.delete()
@@ -344,14 +339,14 @@ Uso:
             if mentee['data']['warns_quantity'] > 0:
                 staffRole = discord.utils.get(ctx.guild.roles, name="Staff")
                 # Send message
-                embed = Embed(title=f"Solicitud de mentoría rechazada",
-                              description=f"¡Hola! {member.mention} la mentoría no se llevara a cabo ya que anteriormente has sido penalizado por no cumplir el código de conducta. Si crees que fue un error, comunícate con {staffRole.mention}.", color=0xFF006B)
-                embed.add_field(name="ID del usuario",
-                                value=userId, inline=True)
-                embed.set_footer(
-                    text=ctx.author, icon_url=ctx.author.avatar_url)
-                await ctx.send(embed=embed)
-                await ctx.send(f"{ctx.author.mention} recordá que debes cancelar la mentoría via Calendly.", delete_after=30)
+                message = f"""
+**Solicitud de mentoría rechazada**
+¡Hola! {member.mention} la mentoría no se llevara a cabo ya que anteriormente has sido penalizado por no cumplir el código de conducta. Si crees que fue un error, comunícate con {staffRole.mention}.
+
+**ID del usuario**
+{userId}
+"""
+                await ctx.channel.send(message)
             else:
                 mentorship_register(
                     self, userId, ctx.message.author.id, ctx.message.author.display_name, userId, member.display_name)
