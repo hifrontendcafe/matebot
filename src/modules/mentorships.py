@@ -154,7 +154,7 @@ Uso:
 
             # Send warn message
             message = f"""
-> :face_with_symbols_over_mouth:  **{member.mention} ha sido penalizado/a**
+> :triangular_flag_on_post:  **{member.mention} ha sido penalizado/a**
 > Cantidad de penalizaciones: **{mentee['data']['warns_quantity'] + 1}**
 > ⠀
 > _**Motivo**: {"Ausencia a la mentoria" if not reason else reason}_
@@ -181,7 +181,7 @@ Uso:
 
                 # Send warn message
                 message = f"""
-> :face_with_symbols_over_mouth:  **{member.mention} ha sido penalizado/a**
+> :triangular_flag_on_post:  **{member.mention} ha sido penalizado/a**
 > Cantidad de penalizaciones: **1**
 > ⠀
 > _**Motivo**: {"Ausencia a la mentoria" if not reason else reason}_
