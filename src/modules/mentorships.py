@@ -154,7 +154,6 @@ Uso:
 
             # Send warn message
             message = f"""
-<<<<<<< HEAD
 > :face_with_symbols_over_mouth:  **{member.mention} ha sido penalizado/a**
 > Cantidad de penalizaciones: **{mentee['data']['warns_quantity'] + 1}**
 > ⠀
@@ -164,18 +163,6 @@ Uso:
 > _ID del usuario: {userId}_
 > ⠀
 > `{ctx.author}`
-=======
-**{member.mention} ha sido penalizado/a**
-Cantidad de penalizaciones: **{mentee['data']['warns_quantity'] + 1}**
-**Motivo**
-{reason}
-**Fecha**
-{now.strftime("%d/%m/%Y %H:%M:%S")}
-**ID del usuario**
-{userId}
-
-`{ctx.author}`
->>>>>>> main
 """
             await ctx.channel.send(message)
 
@@ -194,7 +181,6 @@ Cantidad de penalizaciones: **{mentee['data']['warns_quantity'] + 1}**
 
                 # Send warn message
                 message = f"""
-<<<<<<< HEAD
 > :face_with_symbols_over_mouth:  **{member.mention} ha sido penalizado/a**
 > Cantidad de penalizaciones: **1**
 > ⠀
@@ -204,18 +190,6 @@ Cantidad de penalizaciones: **{mentee['data']['warns_quantity'] + 1}**
 > _ID del usuario: {userId}_
 > ⠀
 > `{ctx.author}`
-=======
-**{member.mention} ha sido penalizado/a**
-Cantidad de penalizaciones: **1**
-**Motivo**
-{reason}
-**Fecha**
-{now.strftime("%d/%m/%Y %H:%M:%S")}
-**ID del usuario**
-{userId}
-
-`{ctx.author}`
->>>>>>> main
 """
 
                 await ctx.channel.send(message)
