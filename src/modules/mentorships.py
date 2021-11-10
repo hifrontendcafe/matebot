@@ -62,14 +62,14 @@ class Mentorship(Cog):
                     await ctx.channel.send(f"Rol Mentee agregado a {user}", delete_after=30)
                 if time and channel is None:
                     message = f"""
-**Recordatorio**
-Hola {user}, {ctx.message.author.mention} te espera en {time} minuto{"" if time == "1" else "s"} <:fecfan:756224742771654696>
+> :alarm_clock:  **Recordatorio**
+> Hola {user}, {ctx.message.author.mention} te espera en {time} minuto{"" if time == "1" else "s"} <:fecfan:756224742771654696>
 """
                     await ctx.channel.send(message)
                 if time and channel:
                     message = f"""
-**Recordatorio**
-Hola {user}, en {time} minuto{"" if time == "1" else "s"} {ctx.message.author.mention} te espera en la sala de voz de {channel} <:fecfan:756224742771654696>
+> :alarm_clock:  **Recordatorio**
+> Hola {user}, en {time} minuto{"" if time == "1" else "s"} {ctx.message.author.mention} te espera en la sala de voz de {channel} <:fecfan:756224742771654696>
 """
                     await ctx.channel.send(message)
         else:
@@ -154,16 +154,15 @@ Uso:
 
             # Send warn message
             message = f"""
-**{member.mention} ha sido penalizado/a**
-Cantidad de penalizaciones: **{mentee['data']['warns_quantity'] + 1}**
-**Motivo**
-{reason}
-**Fecha**
-{now.strftime("%d/%m/%Y %H:%M:%S")}
-**ID del usuario**
-{userId}
-
-`{ctx.author}`
+> :face_with_symbols_over_mouth:  **{member.mention} ha sido penalizado/a**
+> Cantidad de penalizaciones: **{mentee['data']['warns_quantity'] + 1}**
+> ⠀
+> _**Motivo**: {"Ausencia a la mentoria" if not reason else reason}_
+> _**Fecha**: {now.strftime("%d/%m/%Y")}_
+> ⠀
+> _ID del usuario: {userId}_
+> ⠀
+> `{ctx.author}`
 """
             await ctx.channel.send(message)
 
@@ -182,16 +181,15 @@ Cantidad de penalizaciones: **{mentee['data']['warns_quantity'] + 1}**
 
                 # Send warn message
                 message = f"""
-**{member.mention} ha sido penalizado/a**
-Cantidad de penalizaciones: **1**
-**Motivo**
-{reason}
-**Fecha**
-{now.strftime("%d/%m/%Y %H:%M:%S")}
-**ID del usuario**
-{userId}
-
-`{ctx.author}`
+> :face_with_symbols_over_mouth:  **{member.mention} ha sido penalizado/a**
+> Cantidad de penalizaciones: **1**
+> ⠀
+> _**Motivo**: {"Ausencia a la mentoria" if not reason else reason}_
+> _**Fecha**: {now.strftime("%d/%m/%Y")}_
+> ⠀
+> _ID del usuario: {userId}_
+> ⠀
+> `{ctx.author}`
 """
 
                 await ctx.channel.send(message)
@@ -223,6 +221,7 @@ Cantidad de penalizaciones: **1**
         '''
         Comando mentee warn remove
         '''
+
         try:
             await ctx.message.delete()
             userId = user[3:-1]
@@ -235,33 +234,65 @@ Cantidad de penalizaciones: **1**
                         "warns_quantity": mentee['data']['warns_quantity'] - 1,
                     }
                 )
+
                 # Send warn message
-                embed = Embed(title=f"Se ha removido una penalización a {member.display_name}",
-                              description=f"Cantidad de penalizaciones: {mentee['data']['warns_quantity']-1}", color=0x00ebbc)
-                embed.add_field(name="ID del usuario",
-                                value=userId, inline=True)
-                embed.set_footer(
-                    text=ctx.author, icon_url=ctx.author.avatar_url)
-                await ctx.send(embed=embed)
+                message = f"""
+> :point_right:  **Se ha removido una penalización a {member.mention}**
+> Cantidad de penalizaciones: **{mentee['data']['warns_quantity'] - 1}**
+> ⠀
+> _ID del usuario: {userId}_
+> ⠀
+> `{ctx.author}`
+"""
+
+                await ctx.channel.send(message)
+
+                # embed = Embed(title=f"Se ha removido una penalización a {member.display_name}",
+                #               description=f"Cantidad de penalizaciones: {mentee['data']['warns_quantity']-1}", color=0x00ebbc)
+                # embed.add_field(name="ID del usuario",
+                #                 value=userId, inline=True)
+                # embed.set_footer(
+                #     text=ctx.author, icon_url=ctx.author.avatar_url)
+                # await ctx.send(embed=embed)
             else:
-                embed = discord.Embed(title=f"{member.display_name} no tiene penalizaciones",
-                                      description="Cantidad de penalizaciones: 0", color=0x00ebbc)
-                embed.add_field(name="ID del usuario",
-                                value=userId, inline=True)
-                embed.set_footer(
-                    text=ctx.author, icon_url=ctx.author.avatar_url)
-                await ctx.send(embed=embed)
+                message = f"""
+> :ballot_box_with_check:  **{member.mention} no tiene penalizaciones**
+> Cantidad de penalizaciones: **0**
+> ⠀
+> _ID del usuario: {userId}_
+> ⠀
+> `{ctx.author}`
+"""
+                await ctx.channel.send(message)
+
+                # embed = discord.Embed(title=f"{member.display_name} no tiene penalizaciones",
+                #                       description="Cantidad de penalizaciones: 0", color=0x00ebbc)
+                # embed.add_field(name="ID del usuario",
+                #                 value=userId, inline=True)
+                # embed.set_footer(
+                #     text=ctx.author, icon_url=ctx.author.avatar_url)
+                # await ctx.send(embed=embed)
 
         except Exception as e:
             if type(e) is faunadb.errors.NotFound:
                 # Send warn message
-                embed = discord.Embed(title=f"{member.display_name} no tiene penalizaciones",
-                                      description="Cantidad de penalizaciones: 0", color=0x00ebbc)
-                embed.add_field(name="ID del usuario",
-                                value=userId, inline=True)
-                embed.set_footer(
-                    text=ctx.author, icon_url=ctx.author.avatar_url)
-                await ctx.send(embed=embed)
+                message = f"""
+> :ballot_box_with_check:  **{member.mention} no tiene penalizaciones**
+> Cantidad de penalizaciones: **0**
+> ⠀
+> _ID del usuario: {userId}_
+> ⠀
+> `{ctx.author}`
+"""
+                await ctx.channel.send(message)
+
+                # embed = discord.Embed(title=f"{member.display_name} no tiene penalizaciones",
+                #                       description="Cantidad de penalizaciones: 0", color=0x00ebbc)
+                # embed.add_field(name="ID del usuario",
+                #                 value=userId, inline=True)
+                # embed.set_footer(
+                #     text=ctx.author, icon_url=ctx.author.avatar_url)
+                # await ctx.send(embed=embed)
             else:
                 print(e)
 
@@ -369,11 +400,10 @@ Cantidad de penalizaciones: **1**
 
         async def success_message(self, ctx, member, userId):
             message = f"""
-**Solicitud de mentoría exitosa**
-¡Hola! La mentoría de {member.mention} ha sido registrada satisfactoriamente.
-
-**ID del usuario**
-{userId}
+> :white_check_mark:  **Solicitud de mentoría exitosa**
+> ¡Hola! La mentoría de {member.mention} ha sido registrada satisfactoriamente.
+> ⠀
+> _ID del usuario: {userId}_
 """
             await ctx.channel.send(message)
 
@@ -387,11 +417,10 @@ Cantidad de penalizaciones: **1**
                 staffRole = discord.utils.get(ctx.guild.roles, name="Staff")
                 # Send message
                 message = f"""
-**Solicitud de mentoría rechazada**
-¡Hola! {member.mention} la mentoría no se llevara a cabo ya que anteriormente has sido penalizado por no cumplir el código de conducta. Si crees que fue un error, comunícate con {staffRole.mention}.
-
-**ID del usuario**
-{userId}
+> :no_entry:  **Solicitud de mentoría rechazada**
+> ¡Hola! {member.mention} la mentoría no se llevara a cabo ya que anteriormente has sido penalizado por no cumplir el código de conducta. Si crees que fue un error, comunícate con {staffRole.mention}.
+> ⠀
+> _ID del usuario: {userId}_
 """
                 await ctx.channel.send(message)
             else:
