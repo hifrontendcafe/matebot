@@ -15,6 +15,7 @@ import faunadb
 from datetime import datetime
 # Database
 from libs.database import Database as DB
+from modules.help import EmbedGenerator
 
 # ///---- Log ----///
 log = logging.getLogger(__name__)
@@ -89,18 +90,30 @@ class Mentorship(Cog):
     @mentee.command()
     @has_any_role('Mentors', 'admin-mentors')
     async def help(self, ctx):
-        lines = f"""
-        ```md
-# COMANDO {self.PREFIX}mentee
-Uso:
-{self.PREFIX}mentee @usuario -> Agregar/quitar rol de Mentee.
-{self.PREFIX}mentee add @usuario -> Registra una mentoría y a la vez verifica si ese usuario tiene warnings.
-{self.PREFIX}mentee check @usuario -> Verifica si el usuario tiene warnings.
-{self.PREFIX}mentee warn @usuario -> Dar warning a un usuario.
-{self.PREFIX}mentee warn_rm @usuario -> Remover 1 warning al usuario.
-{self.PREFIX}mentee warn_ls -> Exportar lista de warnings.
-            ``` """
-        await ctx.send(lines, delete_after=30)
+        """Imprimo embed con los comandos de `mentee`"""
+        PREFIX = self.PREFIX
+
+        await ctx.message.delete()
+
+        log.info('Mentee Help')
+
+        h = EmbedGenerator(ctx)
+        h.title = f"Mentee: comandos"
+        h.description = f"Lista de comandos para {PREFIX}mentee"
+        h.fields = [
+            (f"{PREFIX}mentee @usuario", "Agregar/quitar rol de Mentee."),
+            (f"{PREFIX}mentee add @usuario", "Registra una mentoría y a la vez verifica si ese usuario tiene warnings."),
+            (f"{PREFIX}mentee check @usuario", "Verifica si el usuario tiene warnings."),
+            (f"{PREFIX}mentee warn @usuario", 'Dar warning a un usuario con motivo "Ausencia a la mentoría"'),
+            (f"{PREFIX}mentee warn @usuario <motivo>", f'Dar warning a un usuario con motivo personalizado. Ejemplo:\n`{PREFIX}mentee warn @usuario Llegada tarde y falta de respeto`'),
+            (f"{PREFIX}mentee warn_rm @usuario", "Remover 1 warning al usuario."),
+            (f"{PREFIX}mentee warn_ls", "Exportar lista de warnings.")
+        ]
+
+        embed = h.generate_embed()
+
+        await ctx.send(embed=embed, delete_after=60)
+
 
     @help.error
     async def mentee_error(self, ctx, error):
