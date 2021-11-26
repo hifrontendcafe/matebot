@@ -427,11 +427,11 @@ class Mentorship(Cog):
             mentee = self.db.get_mentee_by_discord_id(userId)
 
             if mentee['data']['warns_quantity'] > 0:
-                staffRole = discord.utils.get(ctx.guild.roles, name="Staff")
+                adminMentorsRole = discord.utils.get(ctx.guild.roles, name="admin-mentors")
                 # Send message
                 message = f"""
 > :no_entry:  **Solicitud de mentoría rechazada**
-> ¡Hola! {member.mention} la mentoría no se llevara a cabo ya que anteriormente has sido penalizado por no cumplir el código de conducta. Si crees que fue un error, comunícate con {staffRole.mention}.
+> ¡Hola! {member.mention} la mentoría no se llevara a cabo ya que anteriormente has sido penalizado por no cumplir el código de conducta. Si crees que fue un error, comunícate con {adminMentorsRole.mention}.
 > ⠀
 > _ID del usuario: {userId}_
 """
