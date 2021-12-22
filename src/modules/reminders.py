@@ -11,6 +11,7 @@ import faunadb
 from datetime import datetime as dt
 from libs.database import Database as DB
 from utils.buttons import btns_confirm
+from utils.constants import DAYS
 from utils.selects import selects_day
 from utils.errors import Error
 
@@ -37,15 +38,7 @@ class Reminders(commands.Cog):
             'message': '',
         }
         self.step = 0
-        self.days = {
-            'Monday': 'Lunes',
-            'Tuesday': 'Martes',
-            'Wednesday': 'Miércoles',
-            'Thursday': 'Jueves',
-            'Friday': 'Viernes',
-            'Sábado': 'Saturday',
-            'Sunday': 'Domingo'
-        }   
+        self.DAYS = DAYS
 
     @staticmethod
     def _process_channel(channel):
@@ -76,6 +69,9 @@ class Reminders(commands.Cog):
     
     @reminder.command()
     async def add(self, ctx):
+        def check_reminder(i: Interaction, select_menu):
+            return i.author == ctx.author and i.message == msg
+
         async def days(self, ctx):
             def check_selection(i: Interaction, select_menu):
                 return i.author == ctx.author and i.message == msg
@@ -90,7 +86,7 @@ class Reminders(commands.Cog):
 
             embed = Embed(
                 title='Días seleccionados:',
-                description=f'El recordatorio será para los días '+', '.join([f'{self.days[v]}' for v in select_menu.values]),
+                description=f'El recordatorio será para los días '+', '.join([f'{self.DAYS[v]}' for v in select_menu.values]),
                 color=Color.random()
             )
 
@@ -110,7 +106,7 @@ class Reminders(commands.Cog):
                     return message.author == author
                 return inner_check
 
-            await ctx.send('¿A qué hora (en GMT-3) se deberá publicar el recordatorio? Presione "Continuar" para avanzar', delete_after=180)
+            await ctx.send('¿A qué hora (en GMT-3) se deberá publicar el recordatorio? Ejemplos: `9:30`, `14:21:45`', delete_after=180)
             msg = await self.bot.wait_for('message', check=check_entry(ctx.author))
             dtime = dateparser.parse(msg.content)
             if dtime != None:
@@ -139,18 +135,18 @@ class Reminders(commands.Cog):
                 self.new_reminder['channel'] = f'<#{channel_id}>'
 
         await days(self, ctx)
-        await ctx.send(str(self.new_reminder['days']))
+        # await ctx.send(str(self.new_reminder['days']))
 
         await t_event(self, ctx)
-        await ctx.send(str(self.new_reminder['time']))
+        # await ctx.send(str(self.new_reminder['time']))
 
         await ch_event(self, ctx)
-        await ctx.send(str(self.new_reminder['channel']))
+        # await ctx.send(str(self.new_reminder['channel']))
 
         embed = Embed(
-            title="Nuevo recordatorio",
-            description="Sarasa",
-            color=discord.Colour.green().value
+            title="⏰ Nuevo recordatorio ⏰",
+            description="Estás a punto de crear un recordatorio! Estos son los datos recibidos:",
+            color=discord.Colour.blue().value
         )
 
         for key in self.new_reminder.keys():
@@ -158,4 +154,21 @@ class Reminders(commands.Cog):
                 embed.add_field(name=key, value=self.new_reminder[key], inline=True)
         embed.set_footer(text="Los datos son correctos?")
 
-        await ctx.send(embed=embed, delete_after=600)
+        msg = await ctx.send(embed=embed, components=btns_confirm(), delete_after=600)
+        interaction, button = await self.bot.wait_for('button_click', check=check_reminder)
+        await interaction.defer()
+
+        if button.custom_id == 'continue':
+            embed = Embed(
+                title="⏰ Nuevo recordatorio ⏰",
+                description="Excelente! Vas recibir un recordatios en los días y horario seleccionados 🚀",
+                color=discord.Colour.green().value
+            )
+            await ctx.send(embed=embed, delete_after=200)
+        else:
+            embed = Embed(
+                title="⏰ Recordatorio cancelado ⏰",
+                description="No se almacenaron los datos ingresados 😥",
+                color=discord.Colour.red().value
+            )
+            await ctx.send(embed=embed, delete_after=200)
