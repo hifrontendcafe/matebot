@@ -7,9 +7,8 @@ import dateparser
 import discord
 from discord.ext import commands
 from discord import Embed, Color, Interaction
-import faunadb
-from datetime import datetime as dt
-from libs.database import Database as DB
+from datetime import datetime, timedelta
+from libs.reminder import Reminder
 from utils.buttons import btns_confirm
 from utils.constants import DAYS
 from utils.selects import selects_day
@@ -29,13 +28,21 @@ class Reminders(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         secret = os.getenv("FAUNADB_SECRET_KEY")
-        self.db = DB(secret)
+        self.reminder = Reminder(secret)
+        self.reminder.collection = "Reminders"
+        self.reminder.indexes = {
+            'all': 'all_reminders'
+        }
+        self.reminder.action = self.action
+        self.reminder.reminders = [
+            {"delta": timedelta(minutes=1), "message": "_**En 10 minutos arrancamos, no te lo pierdas!!**_"}
+        ]
         self.PREFIX = os.getenv("DISCORD_PREFIX")
         self.new_reminder = {
             'days': [],
             'time': '',
             'channel': '',
-            'message': '',
+            'content': '',
         }
         self.step = 0
         self.DAYS = DAYS
@@ -54,6 +61,7 @@ class Reminders(commands.Cog):
         """
         Comando reminder
         """
+        await ctx.message.delete()
         if ctx.invoked_subcommand is None:
             await ctx.send(f"Este comando no existe! Tipea `{self.PREFIX}reminder` para ver los comandos disponibles :)")
 
@@ -76,6 +84,15 @@ class Reminders(commands.Cog):
             def check_selection(i: Interaction, select_menu):
                 return i.author == ctx.author and i.message == msg
 
+            # embed = Embed(
+            #     title='📆 Días del recordatorio 📆',
+            #     description="Elije los días para que **Matebot** te envíe el recordatorio.\nCuando hagas clic afuera de la selección, se tomarán las respuestas",
+            #     # description=f'El recordatorio será para los días '+', '.join([f'{self.DAYS[v]}' for v in select_menu.values]),
+            #     color=discord.Colour.blue().value
+            # )
+
+            # await ctx.send(embed=embed, delete_after=180)
+
             msg = await ctx.send(
                 'Selecciona los días! Cuando hagas clic afuera de la selección, se tomarán las respuestas',
                 components=[[ selects_day() ]],
@@ -85,9 +102,9 @@ class Reminders(commands.Cog):
             interaction, select_menu = await self.bot.wait_for('selection_select', check=check_selection)
 
             embed = Embed(
-                title='Días seleccionados:',
+                title='📆 Días seleccionados 📆',
                 description=f'El recordatorio será para los días '+', '.join([f'{self.DAYS[v]}' for v in select_menu.values]),
-                color=Color.random()
+                color=discord.Colour.blue().value
             )
 
             # TODO: Cambiar por eliminación por evento disparado de los botones 
@@ -99,20 +116,24 @@ class Reminders(commands.Cog):
                 self.step = 1
                 self.new_reminder['days'] = select_menu.values
     
-
         async def t_event(self, ctx):
             def check_entry(author):
                 def inner_check(message):
                     return message.author == author
                 return inner_check
 
-            await ctx.send('¿A qué hora (en GMT-3) se deberá publicar el recordatorio? Ejemplos: `9:30`, `14:21:45`', delete_after=180)
+            embed = Embed(
+                title="🕗 Hora del recordatorio 🕗",
+                description="¿A qué hora (en GMT-3) se deberá publicar el recordatorio?\n*Ejemplos*: `9:30`, `14:21:45`",
+                color=discord.Colour.blue().value
+            )
+
+            await ctx.send(embed=embed, delete_after=180)
             msg = await self.bot.wait_for('message', check=check_entry(ctx.author))
             dtime = dateparser.parse(msg.content)
             if dtime != None:
                 self.step = 2
                 self.new_reminder['time'] = dtime.time()
-
 
         async def ch_event(self, ctx):
             def check_entry(author):
@@ -120,7 +141,13 @@ class Reminders(commands.Cog):
                     return message.author == author
                 return inner_check
             
-            await ctx.send('¿En qué canal quieres publicar el recordatorio?', delete_after=180)
+            embed = Embed(
+                title="💬 Canal del recordatorio 💬",
+                description="¿En qué canal quieres publicar el recordatorio?",
+                color=discord.Colour.blue().value
+            )
+
+            await ctx.send(embed=embed, delete_after=180)
             msg = await self.bot.wait_for('message', check=check_entry(ctx.author))
             channel_id = self._process_channel(msg.content)
             if channel_id is Error.CHANNEL:
@@ -134,23 +161,40 @@ class Reminders(commands.Cog):
                 self.step = 3
                 self.new_reminder['channel'] = f'<#{channel_id}>'
 
+        async def msg_event(self, ctx):
+            def check_entry(author):
+                def inner_check(message):
+                    return message.author == author
+                return inner_check
+            
+            embed = Embed(
+                title="✍ Mensaje ✍",
+                description="Escribe un mensaje para que aparezca junto al recordatorio!",
+                color=discord.Colour.blue().value
+            )
+            await ctx.send(embed=embed, delete_after=200)
+            msg = await self.bot.wait_for('message', check=check_entry(ctx.author))
+            self.new_reminder["content"] = msg.content
+            
+
         await days(self, ctx)
-        # await ctx.send(str(self.new_reminder['days']))
 
         await t_event(self, ctx)
-        # await ctx.send(str(self.new_reminder['time']))
 
         await ch_event(self, ctx)
-        # await ctx.send(str(self.new_reminder['channel']))
+
+        await msg_event(self, ctx)
 
         embed = Embed(
             title="⏰ Nuevo recordatorio ⏰",
-            description="Estás a punto de crear un recordatorio! Estos son los datos recibidos:",
+            description="Estás a punto de crear un recordatorio! Estos son los datos recibidos:\n" + self.new_reminder["message"],
             color=discord.Colour.blue().value
         )
 
         for key in self.new_reminder.keys():
-            if key != 'message':
+            if key != 'content':
+                if key == 'days':
+                    embed.add_field(name=key, value=', '.join([f'{self.DAYS[v]}' for v in self.new_reminder["days"]]), inline=True)
                 embed.add_field(name=key, value=self.new_reminder[key], inline=True)
         embed.set_footer(text="Los datos son correctos?")
 
@@ -159,6 +203,10 @@ class Reminders(commands.Cog):
         await interaction.defer()
 
         if button.custom_id == 'continue':
+            await self.reminder.add(
+                '336692247649189891',
+                
+                )
             embed = Embed(
                 title="⏰ Nuevo recordatorio ⏰",
                 description="Excelente! Vas recibir un recordatios en los días y horario seleccionados 🚀",
