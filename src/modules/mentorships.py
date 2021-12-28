@@ -415,6 +415,7 @@ class Mentorship(Cog):
             message = f"""
 > :white_check_mark:  **Solicitud de mentoría exitosa**
 > ¡Hola! La mentoría de {member.mention} ha sido registrada satisfactoriamente.
+> Tu mentor asignado es {ctx.message.author.mention}
 > ⠀
 > _ID del usuario: {userId}_
 """
