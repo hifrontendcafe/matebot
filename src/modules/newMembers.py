@@ -29,6 +29,7 @@ class NewMembers(commands.Cog):
         self.get_list()
         self.channel_test = 776196097131413534
         self.channel_cafe = 594935077637718027
+        self.guild_id = 594363964499165194
 
 
     def get_list(self):
@@ -44,7 +45,7 @@ class NewMembers(commands.Cog):
             print(f'Hubo un error en get_list: {error}')
 
 
-    def update_list(self, listUsers: list, users: int, time_zero: float, delta: float):
+    def update_list(self, list_users: list, users: int, time_zero: float, delta: float):
         '''
         Descripción: Actualiza la lista de usuarios nuevos, la condición de usuarios nuevos y el tiempo de espera
         Precondición: Debe existir la colección con el documento
@@ -52,7 +53,7 @@ class NewMembers(commands.Cog):
         '''
         try:
             self.db.update('Users', '292960205647380995', {
-                "new_users_id": listUsers,
+                "new_users_id": list_users,
                 "user_condition": users,
                 "time_sec": time_zero,
                 "time_delta": delta
@@ -68,10 +69,10 @@ class NewMembers(commands.Cog):
         Precondición: Debe existir la colección con el documento
         Poscondición: Se activa el mensaje de bienvenida a los nuevos miembros de FrontendCafé al alcanzar el número de usuarios necesarios
         '''
-        newMember = member.mention
+        new_member = member.mention
         package = self.get_list()
-        listUsers, users, time_zero, delta = package["new_users_id"], package["user_condition"], package["time_sec"], package["time_delta"]
-        newUsers = ''
+        list_users, users, time_zero, delta = package["new_users_id"], package["user_condition"], package["time_sec"], package["time_delta"]
+        new_users = []
         impostor = '<:fecimpostor:755971090471321651>'
         fec_star = '<:fecstar:755451362950512660>'
         messages = [
@@ -81,8 +82,10 @@ class NewMembers(commands.Cog):
             '<#748547143157022871> si no se presentaron. Queremos conocerles!'
         ]
 
-        listUsers.append(newMember)
-        if (len(listUsers) == users):
+        list_users.append(new_member)
+        
+        if (len(list_users) == users):
+            guild = self.bot.get_guild(self.guild_id)
             time_final = time()
             new_delta = time_final - time_zero
 
@@ -93,12 +96,14 @@ class NewMembers(commands.Cog):
 
             cafe = self.bot.get_channel(self.channel_cafe)
             
-            for user in listUsers:
-                newUsers += f'{user} '
+            for user in list_users:
+                parse_user = user[1:-1]
+                if guild.get_member(parse_user) is not None:
+                    new_users.append(users)
             
-            listUsers = []
-            self.update_list(listUsers, users, time_final, new_delta)
-            await cafe.send(f'''{fec_star} Welcome {newUsers}!\nPueden visitar el canal {random.choice(messages)} {impostor}''', delete_after=3600)
-            newUsers = ''
+            self.update_list(list_users, users, time_final, new_delta)
+            await cafe.send(f'''{fec_star} Welcome {", ".join(new_users)}!\nPueden visitar el canal {random.choice(messages)} {impostor}''', delete_after=7200) # 2 horas de duración
+            new_users = []
+            list_users = []
         else:
-            self.update_list(listUsers, users, time_zero, delta)
+            self.update_list(list_users, users, time_zero, delta)
