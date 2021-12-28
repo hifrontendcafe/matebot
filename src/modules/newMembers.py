@@ -97,13 +97,13 @@ class NewMembers(commands.Cog):
             cafe = self.bot.get_channel(self.channel_cafe)
             
             for user in list_users:
-                parse_user = user[1:-1]
+                parse_user = int(user[2:-1])
                 if guild.get_member(parse_user) is not None:
-                    new_users.append(users)
+                    new_users.append(user)
             
-            self.update_list(list_users, users, time_final, new_delta)
-            await cafe.send(f'''{fec_star} Welcome {", ".join(new_users)}!\nPueden visitar el canal {random.choice(messages)} {impostor}''', delete_after=7200) # 2 horas de duración
-            new_users = []
             list_users = []
+            self.update_list(list_users, users, time_final, new_delta)
+            await cafe.send(f'''{fec_star} Welcome {" ".join(new_users)}!\nPueden visitar el canal {random.choice(messages)} {impostor}''', delete_after=7200) # 2 horas de duración
+            new_users = []
         else:
             self.update_list(list_users, users, time_zero, delta)
