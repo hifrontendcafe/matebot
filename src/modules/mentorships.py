@@ -54,9 +54,15 @@ class Mentorship(Cog):
             userId = int(user[3:-1])
             member = await ctx.guild.fetch_member(userId)
             menteeRole = discord.utils.get(ctx.guild.roles, name="Mentees")
-            if menteeRole in member.roles:
+
+            if menteeRole in member.roles and time is None and channel is None:
                 await member.remove_roles(menteeRole)
-                await ctx.channel.send(f"Rol Mentee removido a {user}", delete_after=30)
+                message = f"""
+> :pray: {user} esperamos que hayas tenido una buena experiencia, recuerda darnos feedback para continuar mejorando!
+> https://tiny.cc/fec-mentoria-feedback
+"""
+                await ctx.channel.send(message, delete_after=86400)
+
             else:
                 await member.add_roles(menteeRole)
                 if time is None and channel is None:
