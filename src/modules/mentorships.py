@@ -61,7 +61,7 @@ class Mentorship(Cog):
 > :pray: {user} esperamos que hayas tenido una buena experiencia, recuerda darnos feedback para continuar mejorando!
 > https://tiny.cc/fec-mentoria-feedback
 """
-                await ctx.channel.send(message, delete_after=86400)
+                await ctx.channel.send(message)
 
             else:
                 await member.add_roles(menteeRole)
