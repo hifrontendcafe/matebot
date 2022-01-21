@@ -27,8 +27,9 @@ class NewMembers(commands.Cog):
         self.bot = bot
         self.db = DB(secret)
         self.get_list()
-        self.channel_test = 776196097131413534
+        self.channel_test = 861980330201841686
         self.channel_cafe = 594935077637718027
+        self.channel_manual = 747925827265495111
         self.guild_id = 594363964499165194
 
 
@@ -75,12 +76,6 @@ class NewMembers(commands.Cog):
         new_users = []
         impostor = '<:fecimpostor:755971090471321651>'
         fec_star = '<:fecstar:755451362950512660>'
-        messages = [
-            '<#747925827265495111> para ver más información sobre la comunidad!',
-            '<#748183026244255824> para ver las normas de convivencia!',
-            '<#762660432380821525> y podrán recibir noticias de los grupos de estudio!',
-            '<#748547143157022871> si no se presentaron. Queremos conocerles!'
-        ]
 
         list_users.append(new_member)
         
@@ -103,7 +98,9 @@ class NewMembers(commands.Cog):
             
             list_users = []
             self.update_list(list_users, users, time_final, new_delta)
-            await cafe.send(f'''{fec_star} Welcome {" ".join(new_users)}!\nPueden visitar el canal {random.choice(messages)} {impostor}''', delete_after=7200) # 2 horas de duración
+            await cafe.send(
+                f'''{fec_star} Welcome {" ".join(new_users)}!
+Pueden presentarse en este canal, <#{self.channel_cafe}> y ver el manual en <#{self.channel_manual}> {impostor}''', delete_after=7200)
             new_users = []
         else:
             self.update_list(list_users, users, time_zero, delta)
