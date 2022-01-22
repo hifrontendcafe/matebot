@@ -132,47 +132,53 @@ class Mentorship(Cog):
     @mentee.command()
     @has_any_role('admin-mentors', 'Mentors')
     async def warn(self, ctx, user, *reason):
-        def db_add(self, id, warned_user, warns_quantity, history):
-            self.db.create('Mentorship_Warns', {
-                "id": id,
-                "warned_user": str(warned_user),
-                "warns_quantity": warns_quantity,
-                "history": history,
-            })
-        '''
-        Comando mentee warn
-        '''
-
-        reason = " ".join(reason)
-        now = datetime.now()
-        history_content = {
-            "timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),
-            "reason": reason
-        }
-
-        try:
-            await ctx.message.delete()
-            userId = user[3:-1]
+        if self.validateDiscordUser(user):
+            userId = int(user[3:-1])
             member = await ctx.guild.fetch_member(userId)
-            mentee = self.db.get_mentee_by_discord_id(userId)
-            history = mentee['data']['history']
+            menteeRole = discord.utils.get(ctx.guild.roles, name="Mentees")
+            await member.remove_roles(menteeRole)
 
-            # if the field doesn't exist, I add it
-            if history is None:
-                history = [history_content]
-            else:
-                history.append(history_content)
-
-            self.db.update_with_ref(
-                mentee['ref'],
-                {
-                    "warns_quantity": mentee['data']['warns_quantity'] + 1,
+            def db_add(self, id, warned_user, warns_quantity, history):
+                self.db.create('Mentorship_Warns', {
+                    "id": id,
+                    "warned_user": str(warned_user),
+                    "warns_quantity": warns_quantity,
                     "history": history,
-                }
-            )
+                })
+            '''
+            Comando mentee warn
+            '''
 
-            # Send warn message
-            message = f"""
+            reason = " ".join(reason)
+            now = datetime.now()
+            history_content = {
+                "timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),
+                "reason": reason
+            }
+
+            try:
+                await ctx.message.delete()
+                userId = user[3:-1]
+                member = await ctx.guild.fetch_member(userId)
+                mentee = self.db.get_mentee_by_discord_id(userId)
+                history = mentee['data']['history']
+
+                # if the field doesn't exist, I add it
+                if history is None:
+                    history = [history_content]
+                else:
+                    history.append(history_content)
+
+                self.db.update_with_ref(
+                    mentee['ref'],
+                    {
+                        "warns_quantity": mentee['data']['warns_quantity'] + 1,
+                        "history": history,
+                    }
+                )
+
+                # Send warn message
+                message = f"""
 > :triangular_flag_on_post:  **{member.mention} ha sido penalizado/a**
 > Cantidad de penalizaciones: **{mentee['data']['warns_quantity'] + 1}**
 > ⠀
@@ -183,23 +189,23 @@ class Mentorship(Cog):
 > ⠀
 > `{ctx.author}`
 """
-            await ctx.channel.send(message)
+                await ctx.channel.send(message)
 
-            # embed = Embed(title=f"{member.display_name} ha sido penalizado/a",
-            #               description=f"Cantidad de penalizaciones: {mentee['data']['warns_quantity'] + 1}", color=0xFF6B00)
-            # embed.add_field(name="ID del usuario",
-            #                 value=userId, inline=True)
-            # embed.set_footer(
-            #     text=ctx.author, icon_url=ctx.author.avatar_url)
-            # await ctx.send(embed=embed)
+                # embed = Embed(title=f"{member.display_name} ha sido penalizado/a",
+                #               description=f"Cantidad de penalizaciones: {mentee['data']['warns_quantity'] + 1}", color=0xFF6B00)
+                # embed.add_field(name="ID del usuario",
+                #                 value=userId, inline=True)
+                # embed.set_footer(
+                #     text=ctx.author, icon_url=ctx.author.avatar_url)
+                # await ctx.send(embed=embed)
 
-        except Exception as e:
-            if type(e) is faunadb.errors.NotFound:
-                history = [history_content]
-                db_add(self, str(member.id), member.display_name, 1, history)
+            except Exception as e:
+                if type(e) is faunadb.errors.NotFound:
+                    history = [history_content]
+                    db_add(self, str(member.id), member.display_name, 1, history)
 
-                # Send warn message
-                message = f"""
+                    # Send warn message
+                    message = f"""
 > :triangular_flag_on_post:  **{member.mention} ha sido penalizado/a**
 > Cantidad de penalizaciones: **1**
 > ⠀
@@ -211,17 +217,19 @@ class Mentorship(Cog):
 > `{ctx.author}`
 """
 
-                await ctx.channel.send(message)
+                    await ctx.channel.send(message)
 
-                # embed = discord.Embed(title=f"{member.display_name} ha sido penalizado/a",
-                #                       description="Cantidad de penalizaciones: 1", color=0xFF6B00)
-                # embed.add_field(name="ID del usuario",
-                #                 value=userId, inline=True)
-                # embed.set_footer(
-                #     text=ctx.author, icon_url=ctx.author.avatar_url)
-                # await ctx.send(embed=embed)
-            else:
-                print(e)
+                    # embed = discord.Embed(title=f"{member.display_name} ha sido penalizado/a",
+                    #                       description="Cantidad de penalizaciones: 1", color=0xFF6B00)
+                    # embed.add_field(name="ID del usuario",
+                    #                 value=userId, inline=True)
+                    # embed.set_footer(
+                    #     text=ctx.author, icon_url=ctx.author.avatar_url)
+                    # await ctx.send(embed=embed)
+                else:
+                    print(e)
+        else:
+                await ctx.channel.send(f"Usuario no válido, por favor etiquetar a un usuario de discord con '@'", delete_after=30)
 
     @warn.error
     async def mentee_error(self, ctx, error):
