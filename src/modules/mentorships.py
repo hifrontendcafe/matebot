@@ -35,6 +35,8 @@ class Mentorship(Cog):
         secret = os.getenv("FAUNADB_SECRET_KEY")
         self.db = DB(secret)
         self.PREFIX = os.getenv("DISCORD_PREFIX")
+        self.guild_id = 594363964499165194
+        self.thread_id = 884844274699624488
 
     def validateDiscordUser(self, user):
         regex = re.compile(r"\<\@(\!|.)\d+\>")
@@ -132,6 +134,9 @@ class Mentorship(Cog):
     @mentee.command()
     @has_any_role('admin-mentors', 'Mentors')
     async def warn(self, ctx, user, *reason):
+        guild = self.bot.get_guild(self.guild_id) # Test: 861980329597206570
+        thread = guild.get_thread(self.thread_id) # Test: 935365270346821662
+
         if self.validateDiscordUser(user):
             userId = int(user[3:-1])
             member = await ctx.guild.fetch_member(userId)
@@ -190,6 +195,7 @@ class Mentorship(Cog):
 > `{ctx.author}`
 """
                 await ctx.channel.send(message)
+                await thread.send(message)
 
                 # embed = Embed(title=f"{member.display_name} ha sido penalizado/a",
                 #               description=f"Cantidad de penalizaciones: {mentee['data']['warns_quantity'] + 1}", color=0xFF6B00)
