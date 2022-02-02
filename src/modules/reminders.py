@@ -9,6 +9,7 @@ from datetime import datetime, timezone, timedelta
 import dateparser
 from discord import Embed, Colour
 from discord.ext import commands
+import pytz
 
 from libs.reminder import Reminder
 from libs.embed import EmbedGenerator
@@ -52,9 +53,10 @@ class Reminders(commands.Cog):
             "description": "",
             "channel": 0,
             "type": 0,
-            "day": "Monday",
+            "day": "",
             "time": "",
-            "datetime": ""
+            "date": "",
+            "author_id": ""
         }
 
         self.reminder = Reminder(secret)
@@ -81,6 +83,19 @@ class Reminders(commands.Cog):
             'CANCEL': "\N{NO ENTRY SIGN}"
         }
 
+    @staticmethod
+    def _process_date_time(date, time):
+        date_time = dateparser.parse(f'le {date} {time} -03:00')
+        tz = pytz.timezone('America/Buenos_Aires')
+        date_time_now = datetime.now(tz)
+        if date_time is None:
+            return Error.DATETIME
+        # elif date_time.strftime("%z") is "":
+        #     return Error.TIMEZONE
+        elif date_time < date_time_now:
+            return Error.DATE_HAS_PASSED
+        else:
+            return date_time
 
     @staticmethod
     def colour():
@@ -88,37 +103,11 @@ class Reminders(commands.Cog):
         # red: 0xe62f48
         return Colour.purple().value
 
-
-    @staticmethod
-    def _process_text(text):
-        result = " ".join(text)
-        result = [x.strip() for x in result.split("|", 2)]
-        if len(result) == 3:
-            date_time, channel, content = result[0], result[1], result[2]
-            return date_time, channel, content
-        else:
-            return None, None, None
-
-
-    @staticmethod
-    def _process_date_time(date_time):
-        date_time = dateparser.parse(date_time)
-        date_time_now = datetime.utcnow().replace(tzinfo=timezone.utc)
-        if date_time is None:
-            return Error.DATETIME
-        elif date_time.strftime("%z") is "":
-            return Error.TIMEZONE
-        elif date_time < date_time_now:
-            return Error.DATE_HAS_PASSED
-        else:
-            return date_time
-
     @staticmethod
     def _process_author(author):
         match = re.search(r"\<\@(\!|.)(\d+)\>", author)
         author_id = int(match.group(2))
         return author_id
-
 
     @staticmethod
     def _process_channel(channel):
@@ -128,7 +117,6 @@ class Reminders(commands.Cog):
             return channel_id
         else:
             return Error.CHANNEL
-
 
     def _generate_list(self, docs):
         author = ""
@@ -149,7 +137,6 @@ class Reminders(commands.Cog):
             embed.add_field(name=field[0], value=field[1], inline=True)
         return embed
 
-
     def _generate_next(self, doc):
         author = "<@!{}>\n".format(doc['data']['author_id'])
         date_time = "{}\n".format(doc['data']['str_time'])
@@ -167,12 +154,10 @@ class Reminders(commands.Cog):
             embed.add_field(name=field[0], value=field[1], inline=True)
         return embed
 
-
     @staticmethod
     def _check_permisson(author, channel):
         permission = author.permissions_in(channel)
         return permission.send_messages
-
 
     async def action(self, msg, content, channel_id):
         channel = self.bot.get_channel(int(channel_id))
@@ -207,6 +192,7 @@ class Reminders(commands.Cog):
 
         def check(msg):
             if ctx.author == msg.author:
+                self.add_reminder["author_id"] = ctx.author.id
                 return msg
 
         def check_reaction(reaction, user):
@@ -268,6 +254,14 @@ Escribe el mensaje y aprieta <Enter>
         embed = e.generate_embed()
         msg_bot = await ctx.send(embed=embed)
         msg = await self.bot.wait_for('message', check=check)
+        channel_check = self._process_channel(msg.content)
+        if channel_check is Error.CHANNEL:
+            embed = Embed(
+                title="Error",
+                description="Por favor, elija un canal válido.",
+                color=self.colour()
+            )
+            return await ctx.send(embed=embed, delete_after=60)
         self.add_reminder["channel"] = msg.content
         await msg_bot.delete()
         await msg.delete()
@@ -292,36 +286,71 @@ Escribe el mensaje y aprieta <Enter>
         self.add_reminder["type"] = emojis.index(reaction.emoji)
         await msg_bot.delete()
 
+        if self.add_reminder["type"] == 0:
         # Paso a6: Día y hora del recordatorio
-        e.fields= [("¿Día y hora del recordatorio?", """
+            e.fields= [("¿Día y hora del recordatorio?", """
 El formato a seguir es: dd/mm/yyyy HH:MM
 Ejemplo: 28/01/2022 19:13
 Escribe el mensaje y aprieta <Enter>
 """)]
-        embed = e.generate_embed()
-        await ctx.send(embed=embed)
-        msg = await self.bot.wait_for('message', check=check)
-        await ctx.send(msg.content)
+            embed = e.generate_embed()
+            msg_bot = await ctx.send(embed=embed)
+            msg = await self.bot.wait_for('message', check=check)
+            rem_date, rem_time = msg.content.split(" ")
+            # TODO: Usar esta validación
+            date_time = self._process_date_time(date=rem_date, time=rem_time)
+            if date_time is Error.DATETIME:
+                embed = Embed(
+                    title="Error: fecha y hora",
+                    description="Por favor, expecifique con mas detalles la fecha del evento.",
+                    color=self.colour()
+                )
+                return await ctx.send(embed=embed, delete_after=60)
+            elif date_time is Error.DATE_HAS_PASSED:
+                embed = Embed(
+                    title="Error: fecha pasada",
+                    description="Por favor, defina una fecha y hora posterior a la actual.",
+                    color=self.colour()
+                )
+                return await ctx.send(embed=embed, delete_after=60)
+            self.add_reminder["date"] = rem_date
+            self.add_reminder["time"] = rem_time
+            await msg_bot.delete()
+            await msg.delete()
+            print(self.add_reminder)
 
-        # Paso final: Día y hora del recordatorio
-        e.description = """
+        # Paso final: Resumen
+        e.description = f"""
 Perfecto! El recordatorio quedaría de la
 siguiente manera:
 
-<Nombre>
-<Descripción laaaaaaaaaaaaaaaaaaaaaaaaarga>
-<#Canal>
-<Día> <Hora>
-<Único || Semanal || Quincenal || Mensual>
+**{self.add_reminder["title"]}**
+{self.add_reminder["description"]}
+{self.add_reminder["channel"]}
+{self.add_reminder["date"]} {self.add_reminder["time"]}
+{'__Recordatorio único__' if self.add_reminder["type"] == 0 else ''}
+{'__Recordatorio semanal__' if self.add_reminder["type"] == 1 else ''}
+{'__Recordatorio quincenal__' if self.add_reminder["type"] == 2 else ''}
+{'__Recordatorio mensual__' if self.add_reminder["type"] == 3 else ''}
+<@336692247649189891> <@336692247649189891> <@336692247649189891> 
 """
         e.fields= [("Reacciones", """
 ✅ Se ve bien, crear evento!
 ❌ Nop, volveré a hacerlo
 """)]
         embed = e.generate_embed()
-        await ctx.send(embed=embed)
-        msg = await self.bot.wait_for('message', check=check)
-        await ctx.send(msg.content)
+        msg = await ctx.send(embed=embed)
+        await msg.add_reaction(emoji="✅")
+        await msg.add_reaction(emoji="❌")
+        reaction, user = await self.bot.wait_for('reaction_add', check=check_reaction)
+        await msg.delete()
+        if reaction.emoji == "❌":
+            await ctx.send("👍")
+            return
+        else:
+            # TODO: Guardar datos en FaunaDB
+            author = self.bot.get_user(self.add_reminder["author_id"])
+            await ctx.send("Recordatorio creado!")
 
         # date_time, channel, content = self._process_text(text)
         # if date_time is None or channel is None or content is None:
