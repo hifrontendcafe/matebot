@@ -26,23 +26,22 @@ log = logging.getLogger(__name__)
 
 
 class Reminders(commands.Cog):
-    """ Módulo Scheduler
+    """
+    ## Módulo Reminders
 
-    Programa un evento y da aviso con las siguientes frecuencias:
-    - 1 día antes
-    - 1 hora antes
-    - 10 minutos antes
+    Programa un recordatorio y da el aviso en:
+    - Una fecha y hora exáctos (único aviso)
+    - Cada semana/quincena/mes en un día exacto (periódicos)
 
-    Comandos:
-        >sched add <datetime> | <channel> | <content>
-        >sched list ó >sched ls
-        >sched remove <id> ó >sched rm <id>
-        >sched help
+    ### Comandos:
 
-    Ejemplo:
-        >sched add hoy a las 22:00 gmt-3 | #channel | Mi evento
-        >sched add el 2030/12/24 a las 8pm gmt-3 | #channel | Mi evento
-        >sched remove 12345
+    `>reminder add`: Agrega un recordatorio mediante una serie de pasos
+
+    `>reminder ls`: Lista los recordatorios creados
+    
+    `>reminder rm <id>`: Elimina un recordatorio dado un id
+    
+    `>reminder help`: Muestra un mensaje con los comandos en detalle
     """
 
     def __init__(self, bot):
@@ -51,6 +50,7 @@ class Reminders(commands.Cog):
         self.add_reminder = {
             "title": '',
             "description": "",
+            "text": "",
             "channel": 0,
             "type": 0,
             "day": "",
@@ -73,9 +73,9 @@ class Reminders(commands.Cog):
         self.reminder.action = self.action
         # Defino los recodatorios
         self.reminder.reminders = [
-            {"delta": timedelta(days=1),     "message": "_**Mañana comenzamos, te esperamos!!**_"},
-            {"delta": timedelta(hours=1),    "message": "_**Nos estamos preparando, en 1 hora arrancamos!!**_"},
-            {"delta": timedelta(minutes=10), "message": "_**En 10 minutos arrancamos, no te lo pierdas!!**_"}
+            {"delta": timedelta(minutes=1), "message": "_**Sarasa 1**_"},
+            {"delta": timedelta(minutes=2), "message": "_**Sarasa 2**_"},
+            {"delta": timedelta(minutes=3), "message": "_**Sarasa 3**_"},
         ]
 
         self.emoji = {
@@ -161,7 +161,7 @@ class Reminders(commands.Cog):
 
     async def action(self, msg, content, channel_id):
         channel = self.bot.get_channel(int(channel_id))
-        await channel.send(f"{msg}\n\n{content}")
+        await channel.send(f"SARASAAAAAA")
 
 
     # Comandos del bot
@@ -207,7 +207,7 @@ Antes de terminar, te mostraré el resultado final a modo de vista previa.
 """
         e.fields= [("Reacciones", """
 ✅ Ok, empecemos!
-❌ Nop, lo haré en otro momento        
+❌ Nop, lo haré en otro momento
 """)]
         embed = e.generate_embed()
         msg = await ctx.send(embed=embed)
@@ -219,7 +219,21 @@ Antes de terminar, te mostraré el resultado final a modo de vista previa.
             await ctx.send("👍")
             return
 
-        # Paso 2: Nombre del recordatorio
+        # Paso 2: Destinatarios del recordatorio
+        e.description = ""
+        e.fields= [("¿Destinatarios del recordatorio?", """
+Puedes colocar menciones a users y/o roles del FrontendCafé. **No se verán dentro del embed!**
+Escribe el mensaje y aprieta <Enter>     
+""")]
+        embed = e.generate_embed()
+        msg_bot = await ctx.send(embed=embed)
+        msg = await self.bot.wait_for('message', check=check)
+        self.add_reminder["text"] = msg.content
+        await msg_bot.delete()
+        await msg.delete()
+        print(self.add_reminder)
+
+        # Paso 3: Nombre del recordatorio
         e.description = ""
         e.fields= [("¿Nombre del recordatorio?", """
 En lo posible, debe ser corto y descriptivo.
@@ -233,7 +247,7 @@ Escribe el mensaje y aprieta <Enter>
         await msg.delete()
         print(self.add_reminder)
 
-        # Paso 3: Descripción del recordatorio
+        # Paso 4: Descripción del recordatorio
         e.fields= [("¿Descripción del recordatorio?", """
 Puede ser más largo, hasta 256 caractéres.
 Escribe el mensaje y aprieta <Enter> 
@@ -246,7 +260,7 @@ Escribe el mensaje y aprieta <Enter>
         await msg.delete()
         print(self.add_reminder)
 
-        # Paso 4: Canal de publicación del recordatorio
+        # Paso 5: Canal de publicación del recordatorio
         e.fields= [("¿En cuál canal publicar el recordatorio?", """
 Presiona # y acontinuación el nombre del canal.
 Escribe el mensaje y aprieta <Enter>
@@ -267,7 +281,7 @@ Escribe el mensaje y aprieta <Enter>
         await msg.delete()
         print(self.add_reminder)
 
-        # Paso 5: Recordatorio único o recurrente
+        # Paso 6: Recordatorio único o recurrente
         e.fields= [
             ("¿El recordatorio es único?", "Elije una opción"),
             ("Reacciones", """
@@ -287,7 +301,7 @@ Escribe el mensaje y aprieta <Enter>
         await msg_bot.delete()
 
         if self.add_reminder["type"] == 0:
-        # Paso a6: Día y hora del recordatorio
+        # Paso a7: Día y hora del recordatorio
             e.fields= [("¿Día y hora del recordatorio?", """
 El formato a seguir es: dd/mm/yyyy HH:MM
 Ejemplo: 28/01/2022 19:13
@@ -297,7 +311,6 @@ Escribe el mensaje y aprieta <Enter>
             msg_bot = await ctx.send(embed=embed)
             msg = await self.bot.wait_for('message', check=check)
             rem_date, rem_time = msg.content.split(" ")
-            # TODO: Usar esta validación
             date_time = self._process_date_time(date=rem_date, time=rem_time)
             if date_time is Error.DATETIME:
                 embed = Embed(
@@ -332,7 +345,6 @@ siguiente manera:
 {'__Recordatorio semanal__' if self.add_reminder["type"] == 1 else ''}
 {'__Recordatorio quincenal__' if self.add_reminder["type"] == 2 else ''}
 {'__Recordatorio mensual__' if self.add_reminder["type"] == 3 else ''}
-<@336692247649189891> <@336692247649189891> <@336692247649189891> 
 """
         e.fields= [("Reacciones", """
 ✅ Se ve bien, crear evento!
@@ -348,81 +360,27 @@ siguiente manera:
             await ctx.send("👍")
             return
         else:
-            # TODO: Guardar datos en FaunaDB
             author = self.bot.get_user(self.add_reminder["author_id"])
+            date_time = dateparser.parse(f'le {self.add_reminder["date"]} {self.add_reminder["time"]} -03:00')
+            channel_id = self._process_channel(self.add_reminder["channel"])
+            # ANTES: author | date_time | channel | "content"
+            # DESPUES: author_id | date + time | channel | [title, description, text, type]
+            doc = await self.reminder.add(
+                author,
+                date_time,
+                str(channel_id),
+                [
+                    self.add_reminder["title"],
+                    self.add_reminder["description"],
+                    self.add_reminder["text"],
+                    self.add_reminder["type"]
+                ]
+            )
             await ctx.send("Recordatorio creado!")
+            await ctx.send(f"ID: {doc['ref'].id()}")
 
-        # date_time, channel, content = self._process_text(text)
-        # if date_time is None or channel is None or content is None:
-        #     embed = Embed(
-        #         title="Error: parámetros incorrectos",
-        #         description="Por favor, separe el contentido de esta manera: **<datetime> | <channel> | <content>**",
-        #         color=self.colour()
-        #     )
-        #     return await ctx.send(embed=embed, delete_after=60)
-
-        # # Verifico si la fecha fue parseada con exito
-        # date_time = self._process_date_time(date_time)
-        # if date_time is Error.DATETIME:
-        #     embed = Embed(
-        #         title="Error: fecha y hora",
-        #         description="Por favor, expecifique con mas detalles la fecha del evento.",
-        #         color=self.colour()
-        #     )
-        #     return await ctx.send(embed=embed, delete_after=60)
-        # elif date_time is Error.TIMEZONE:
-        #     embed = Embed(
-        #         title="Error: zona horaria",
-        #         description="Por favor, defina la zona horaria, por ejemplo `gmt-3`.",
-        #         color=self.colour()
-        #     )
-        #     return await ctx.send(embed=embed, delete_after=60)
-        # elif date_time is Error.DATE_HAS_PASSED:
-        #     embed = Embed(
-        #         title="Error: fecha pasada",
-        #         description="Por favor, defina una fecha y hora posterior a la actual.",
-        #         color=self.colour()
-        #     )
-        #     return await ctx.send(embed=embed, delete_after=60)
-
-        # # Verifico el formato del channel
-        # channel_id = self._process_channel(channel)
-        # if channel_id is Error.CHANNEL:
-        #     embed = Embed(
-        #         title="Error",
-        #         description="Por favor, elija un canal válido.",
-        #         color=self.colour()
-        #     )
-        #     return await ctx.send(embed=embed, delete_after=60)
-
-        # # Verifico que el author tenga pemisos para escribir en el canal objetivo
-        # if self._check_permisson(ctx.author, ctx.bot.get_channel(channel_id)) is False:
-        #     embed = Embed(
-        #         title="Error de permisos",
-        #         description="Ups lo siendo, necesita permisos para enviar mensajes a ese canal.",
-        #         color=self.colour()
-        #     )
-        #     return await ctx.send(embed=embed, delete_after=60)
-
-        # fields = [
-        #     ("Usuario", "<@!{}>".format(ctx.author.id)),
-        #     ("Fecha", date_time.strftime("%Y-%m-%d | %H:%M | %z")),
-        #     ("Canal", "<#{}>".format(channel_id))
-        # ]
-
-        # embed = Embed(
-        #     title="Confirmación del evento",
-        #     description=content,
-        #     color=self.colour()
-        # )
-        # for field in fields:
-        #     embed.add_field(name=field[0], value=field[1], inline=True)
-        # embed.set_footer(text="Los datos son correctos?")
-
-        # msg = await ctx.send(embed=embed, delete_after=60)
-        # await msg.add_reaction(self.emoji['CANCEL'])
-        # await msg.add_reaction(self.emoji['OK'])
-
+            # TODO: Evento creado en Fauna, falta que mande el mensaje!
+            # TODO: Editar línea 75 para que mande un embed con los jobs cargados
 
     # @sched.command(aliases=["ls"])
     # async def list(self, ctx):
