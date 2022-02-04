@@ -47,6 +47,7 @@ class Reminders(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         secret = os.getenv("FAUNADB_SECRET_KEY")
+        self.PREFIX = os.getenv("DISCORD_PREFIX")
         self.add_reminder = {
             "title": '',
             "description": "",
@@ -72,11 +73,7 @@ class Reminders(commands.Cog):
         # Defino la función que se utiliza para ejecutar los eventos
         self.reminder.action = self.action
         # Defino los recodatorios
-        self.reminder.reminders = [
-            {"delta": timedelta(minutes=1), "message": "_**Sarasa 1**_"},
-            {"delta": timedelta(minutes=2), "message": "_**Sarasa 2**_"},
-            {"delta": timedelta(minutes=3), "message": "_**Sarasa 3**_"},
-        ]
+        self.reminder.reminders = []
 
         self.emoji = {
             'OK': "\N{BALLOT BOX WITH CHECK}\N{VARIATION SELECTOR-16}",
@@ -161,8 +158,8 @@ class Reminders(commands.Cog):
 
     async def action(self, msg, content, channel_id):
         channel = self.bot.get_channel(int(channel_id))
-        await channel.send(f"SARASAAAAAA")
-
+        await channel.send(f"Hola {content[2]}! <:fecimpostor:755971090471321651>", embed=msg)
+        # await channel.send()
 
     # Comandos del bot
 
@@ -363,8 +360,13 @@ siguiente manera:
             author = self.bot.get_user(self.add_reminder["author_id"])
             date_time = dateparser.parse(f'le {self.add_reminder["date"]} {self.add_reminder["time"]} -03:00')
             channel_id = self._process_channel(self.add_reminder["channel"])
-            # ANTES: author | date_time | channel | "content"
-            # DESPUES: author_id | date + time | channel | [title, description, text, type]
+            e.title = f"[Recordatorio] {self.add_reminder['title']}"
+            e.description = self.add_reminder['description']
+            e.fields = [("Pro tip", f"Con el comando `{self.PREFIX}reminder help` puedes ver todos los comandos para recordatorios")]
+            embed = e.generate_embed()
+            self.reminder.reminders = [
+                {"delta": timedelta(minutes=1), "message": embed},
+            ]
             doc = await self.reminder.add(
                 author,
                 date_time,
@@ -376,17 +378,25 @@ siguiente manera:
                     self.add_reminder["type"]
                 ]
             )
-            await ctx.send("Recordatorio creado!")
-            await ctx.send(f"ID: {doc['ref'].id()}")
+            e.title = f"Recordatorio creado!"
+            e.description = "Guarda el ID para poder borrar el recordatorio en cualquier momento"
+            e.fields = [(
+                "ID del recordatorio", doc['ref'].id()
+            )]
+            embed = e.generate_embed()
+            await ctx.send(embed=embed)
+            try:
+                await author.send(embed=embed)
+            except Exception:
+                pass
 
-            # TODO: Evento creado en Fauna, falta que mande el mensaje!
-            # TODO: Editar línea 75 para que mande un embed con los jobs cargados
+    # TODO: Adaptar comandos list, remove y help
 
-    # @sched.command(aliases=["ls"])
+    # @reminder.command(aliases=["ls"])
     # async def list(self, ctx):
-    #     """ Comando sched list
+    #     """ Comando `>reminder list`
 
-    #     Muestra todos los eventos programados que están vigentes.
+    #     Muestra todos los recordatorios programados que están vigentes.
     #     """
 
     #     log.info("Scheduler list")
