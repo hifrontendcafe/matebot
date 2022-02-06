@@ -20,19 +20,38 @@ jobs:
         source: "."
         target: "~/Bots/matebot"
 
-    - name: Executing remote command
+    - name: Build the docker image
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.SSH_HOST }}
         USERNAME: ${{ secrets.SSH_USERNAME }}
         KEY: ${{ secrets.SSH_KEY }}
-        script: ls
+        script: cd ~/Bots/matebot && docker build -t matebot-image .
         
+    - name: Stop the current container
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        USERNAME: ${{ secrets.SSH_USERNAME }}
+        KEY: ${{ secrets.SSH_KEY }}
+        script: |
+          cd ~/Bots/matebot
+          docker build -t matebot-image .
+          docker stop matebot
+          docker rm matebot
+          >
+          docker run -d --restart always
+          -e DISCORD_PREFIX=${{ secrets.DISCORD_PREFIX }}
+          -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
+          -e FAUNADB_SECRET_KEY=${{ secrets.FAUNADB_SECRET_KEY }}
+          --name matebot matebot-image
+          docker rmi matebot-image
+
 #     steps:
 #       - name: Check out repository code
 #         uses: actions/checkout@v2
 #       - name: Build the docker image
-#         run: docker build -t matebot-image:$(echo ${GITHUB_SHA} | cut -c1-8) .
+#         run: docker build -t matebot-image .
 #       - name: Stop the current container
 #         continue-on-error: true
 #         run: docker stop matebot
