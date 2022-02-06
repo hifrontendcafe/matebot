@@ -116,39 +116,26 @@ class Reminders(commands.Cog):
             return Error.CHANNEL
 
     def _generate_list(self, docs):
-        author = ""
-        date_time = ""
-        ref_id = ""
+        fields = []
         for doc in docs:
-            author += "<@!{}>\n".format(doc['data']['author_id'])
-            date_time += "{}\n".format(doc['data']['str_time'])
-            ref_id += "{}\n".format(doc['ref'].id())
+            title = f"🟣 {doc['data']['content'][0]}"
+            channel = f"**Canal**: <#{doc['data']['channel']}>"
+            date, time, _ = doc['data']['str_time'].split(' | ')
+            date = '-'.join(date.split('-')[::-1])
+            date_time = f"**Fecha y Hora**: {date} {time}" 
+            author = f"**Autor**: <@!{doc['data']['author_id']}>"
+            ref_id = f"**ID**: {doc['ref'].id()}"
 
-        fields = [
-            ("Author", author),
-            ("Fecha", date_time),
-            ("ID", ref_id),
-        ]
-        embed = Embed(title="Lista de eventos", color=self.colour())
+            fields.append((
+                title, 
+f"""
+{channel} | {date_time}
+{author} | {ref_id}            
+"""
+            ))
+        embed = Embed(title="Lista de recordatorios", color=self.colour())
         for field in fields:
-            embed.add_field(name=field[0], value=field[1], inline=True)
-        return embed
-
-    def _generate_next(self, doc):
-        author = "<@!{}>\n".format(doc['data']['author_id'])
-        date_time = "{}\n".format(doc['data']['str_time'])
-        ref_id = "{}\n".format(doc['ref'].id())
-
-        fields = [
-            ("Author", author),
-            ("Fecha", date_time),
-            ("ID", ref_id),
-        ]
-
-        description = doc['data']['content']
-        embed = Embed(title="Próximo evento", description=description, color=self.colour())
-        for field in fields:
-            embed.add_field(name=field[0], value=field[1], inline=True)
+            embed.add_field(name=field[0], value=field[1], inline=False)
         return embed
 
     @staticmethod
@@ -390,69 +377,58 @@ siguiente manera:
             except Exception:
                 pass
 
-    # TODO: Adaptar comandos list, remove y help
+    # TODO: Adaptar comandos remove y help
 
-    # @reminder.command(aliases=["ls"])
-    # async def list(self, ctx):
-    #     """ Comando `>reminder list`
+    @reminder.command(aliases=["ls"])
+    async def list(self, ctx):
+        """ Comando `>reminder list`
 
-    #     Muestra todos los recordatorios programados que están vigentes.
-    #     """
+        Muestra todos los recordatorios programados que están vigentes.
+        """
 
-    #     log.info("Scheduler list")
-
-    #     # Recivo la lista de ventos
-    #     docs = await self.reminder.list()
-    #     if docs:
-    #         embed = self._generate_list(docs)
-    #         await ctx.send(embed=embed, delete_after=60)
-    #     else:
-    #         embed = Embed(title="Lista Vacía")
-    #         await ctx.send(embed=embed, delete_after=60)
-
-
-    # @sched.command()
-    # async def next(self, ctx):
-    #     """ Comando sched next
-
-    #     Muestra datos del próximo evento.
-    #     """
-
-    #     log.info("Scheduler next")
-
-    #     # Recivo la lista de ventos
-    #     docs = await self.reminder.list()
-    #     if docs:
-    #         embed = self._generate_next(docs[0])
-    #         await ctx.send(embed=embed, delete_after=60)
-    #     else:
-    #         embed = Embed(title="Sin eventos", color=self.colour())
-    #         await ctx.send(embed=embed, delete_after=60)
+        log.info("Scheduler list")
+        docs = await self.reminder.list()
+        # Recibo la lista de ventos
+        if docs:
+            embed = self._generate_list(docs)
+            await ctx.send(embed=embed, delete_after=60)
+        else:
+            embed = Embed(title="Lista Vacía")
+            await ctx.send(embed=embed, delete_after=60)
 
 
-    # @sched.command(aliases=["rm"])
-    # async def remove(self, ctx, id_: str):
-    #     """ Comando sched remove
+    @reminder.command(aliases=["rm"])
+    async def remove(self, ctx, id_: str):
+        """ Comando `>reminder remove`
 
-    #     Elimina un evento programado.
-    #     Solo el propietario del evento puede removerlo.
-    #     """
+        Elimina un recordatorio programado.
+        Solo el propietario del evento puede removerlo.
+        """
 
-    #     log.info("Scheduler remove")
-    #     doc = await self.reminder.remove(id_, str(ctx.author))
-    #     if doc:
-    #         fields = [
-    #             ("Usuario", "<@!{}>".format(doc['data']['author_id'])),
-    #             ("Fecha", doc['data']['str_time']),
-    #             ("ID", str(doc['ref'].id()))
-    #         ]
-    #         embed = Embed(title="Evento eliminado", color=self.colour())
-    #         for field in fields:
-    #             embed.add_field(name=field[0], value=field[1], inline=True)
-    #         await ctx.send(embed=embed, delete_after=60)
-    #     else:
-    #         embed = Embed(title="ID no encontrado o no eres el propiteario del evento", color=self.colour())
-    #         await ctx.send(embed=embed, delete_after=60)
+        log.info("Scheduler remove")
+        doc = await self.reminder.remove(id_, str(ctx.author))
+        if doc:
+            title = f"🟣 {doc['data']['content'][0]}"
+            channel = f"**Canal**: <#{doc['data']['channel']}>"
+            date, time, _ = doc['data']['str_time'].split(' | ')
+            date = '-'.join(date.split('-')[::-1])
+            date_time = f"**Fecha y Hora**: {date} {time}" 
+            author = f"**Autor**: <@!{doc['data']['author_id']}>"
+            ref_id = f"**ID**: {doc['ref'].id()}"
+
+            field = [
+                title, 
+f"""
+{channel} | {date_time}
+{author} | {ref_id}            
+"""
+            ]
+            embed = Embed(title="Recordatorio eliminado", color=self.colour())
+            embed.add_field(name=field[0], value=field[1], inline=False)
+            await ctx.send(embed=embed, delete_after=60)
+        else:
+            embed = Embed(title="ID no encontrado o no eres el propiteario del evento", color=self.colour())
+            await ctx.send(embed=embed, delete_after=60)
 
 
     # @sched.command()
@@ -499,46 +475,3 @@ siguiente manera:
     #     for field in fields:
     #         embed.add_field(name=field[0], value=field[1], inline=False)
     #     return await ctx.send(embed=embed, delete_after=60)
-
-
-    # @commands.Cog.listener()
-    # async def on_raw_reaction_add(self, payload):
-    #     # Obtain reactioned message by id
-    #     channel = self.bot.get_channel(payload.channel_id)
-    #     msg = await channel.fetch_message(payload.message_id)
-    #     # Check if reactined message was sended by the bot
-    #     colour = msg.embeds[0].colour if len(msg.embeds) == 1 else Embed.Empty
-    #     if colour != Embed.Empty:
-    #         colour = colour.value
-    #     if msg.author == self.bot.user and colour == self.colour():
-    #         # Check if the reaction was added by the bot
-    #         if payload.user_id != self.bot.user.id:
-    #             if payload.emoji.name == self.emoji['OK']:
-    #                 # Recovery data from message
-    #                 fields = msg.embeds[0].fields
-    #                 str_author = fields[0].value
-    #                 str_date_time = fields[1].value
-    #                 str_channel = fields[2].value
-    #                 author_id = self._process_author(str_author)
-
-    #                 author = self.bot.get_user(author_id)
-    #                 date_time = datetime.strptime(str_date_time, "%Y-%m-%d | %H:%M | %z")
-    #                 channel_id = self._process_channel(str_channel)
-    #                 content = msg.embeds[0].description
-
-    #                 PREFIX = os.getenv("DISCORD_PREFIX")
-
-    #                 doc = await self.reminder.add(author, date_time, str(channel_id), content)
-    #                 await msg.delete()
-    #                 embed = Embed(
-    #                     title="Evento agregado con exito!",
-    #                     description=f"Puede ver sus eventos programados con:\n`{PREFIX}sched list`",
-    #                     color=self.colour()
-    #                 )
-    #                 embed.set_footer(text=f"ID: {doc['ref'].id()}")
-    #                 return await channel.send(embed=embed, delete_after=60)
-
-    #             if payload.emoji.name == self.emoji['CANCEL']:
-    #                 await msg.delete()
-    #                 embed = Embed(title="Evento cancelado", color=self.colour())
-    #                 return await channel.send(embed=embed, delete_after=60)
