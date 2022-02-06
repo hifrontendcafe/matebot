@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'V1'
-        required: true
+        description: 'Comment'
+        required: false
 jobs:
   deploy:
     runs-on: self-hosted
