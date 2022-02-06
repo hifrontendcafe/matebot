@@ -270,14 +270,15 @@ Escribe el mensaje y aprieta <Enter>
             ("¿El recordatorio es único?", "Elije una opción"),
             ("Reacciones", """
 1️⃣ Debe publicarse en una fecha exacta (será único)
-2️⃣ Se repite un día en específico cada semana
-3️⃣ Se repite un día en específico cada quincena
-4️⃣ Se repite un día en específico cada mes
+~~2️⃣ Se repite un día en específico cada semana~~ (Próximamente)
+~~3️⃣ Se repite un día en específico cada quincena~~ (Próximamente)
+~~4️⃣ Se repite un día en específico cada mes~~ (Próximamente)
 """)
         ]
         embed = e.generate_embed()
         msg_bot = await ctx.send(embed=embed)
-        emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
+        # emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
+        emojis = ["1️⃣"]
         for emoji in emojis:
             await msg_bot.add_reaction(emoji=emoji)
         reaction, user = await self.bot.wait_for('reaction_add', check=check_reaction)
@@ -377,8 +378,6 @@ siguiente manera:
             except Exception:
                 pass
 
-    # TODO: Adaptar comandos remove y help
-
     @reminder.command(aliases=["ls"])
     async def list(self, ctx):
         """ Comando `>reminder list`
@@ -386,7 +385,7 @@ siguiente manera:
         Muestra todos los recordatorios programados que están vigentes.
         """
 
-        log.info("Scheduler list")
+        log.info("Reminder list")
         docs = await self.reminder.list()
         # Recibo la lista de ventos
         if docs:
@@ -405,7 +404,7 @@ siguiente manera:
         Solo el propietario del evento puede removerlo.
         """
 
-        log.info("Scheduler remove")
+        log.info("Reminder remove")
         doc = await self.reminder.remove(id_, str(ctx.author))
         if doc:
             title = f"🟣 {doc['data']['content'][0]}"
@@ -431,47 +430,24 @@ f"""
             await ctx.send(embed=embed, delete_after=60)
 
 
-    # @sched.command()
-    # async def clear_dm(self, ctx):
-    #     messages_to_remove = 10
+    @reminder.command()
+    async def help(self, ctx):
+        """ Comando `>reminder help`
 
-    #     async for message in self.bot.get_user(ctx.author.id).history(limit=messages_to_remove):
-    #         if message.author.id == self.bot.user.id:
-    #             await message.delete()
-    #             await asyncio.sleep(1)
+        Muestra la ayuda.
+        """
 
-
-    # @sched.command()
-    # async def help(self, ctx):
-    #     """ Comando sched help
-
-    #     Muestra la ayuda.
-    #     """
-
-    #     log.info("Scheduler Help")
-    #     PREFIX = os.getenv("DISCORD_PREFIX")
-
-    #     author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
-    #     title = f"Ayuda del comando: `sched`"
-    #     fields = [
-    #         (f"{PREFIX}sched add", "Programa un nuevo evento."),
-    #         (f"{PREFIX}sched list | ls", "Lista los eventos pendientes."),
-    #         (f"{PREFIX}sched next", "Información del próximo evento."),
-    #         (f"{PREFIX}sched remove | rm", "Elimina un evento programado."),
-    #         (f"{PREFIX}sched help", "Muestra la ayuda."),
-    #         ("Ejemplos:",
-    #             f"""
-    #             {PREFIX}sched add <datetime> | <channel> | <content>\n\
-    #             {PREFIX}sched add mañana a las 22:00 gmt-3 | #my-channel | https://google.com\n\
-    #             {PREFIX}sched list\n\
-    #             {PREFIX}sched remove <id>\n\
-    #             {PREFIX}sched rm 281547393529283072
-    #             """
-    #         )
-    #     ]
-
-    #     embed = Embed(title=title, color=self.colour())
-    #     embed.set_author(name=author[0], icon_url=author[1])
-    #     for field in fields:
-    #         embed.add_field(name=field[0], value=field[1], inline=False)
-    #     return await ctx.send(embed=embed, delete_after=60)
+        log.info("Reminder Help")
+        PREFIX = os.getenv("DISCORD_PREFIX")
+        
+        h = EmbedGenerator(ctx)
+        h.title = f"Ayuda del comando: `reminder`" 
+        h.description = ""
+        h.fields = [
+            (f"`{PREFIX}reminder add`", "Programa un nuevo recordatorio."),
+            (f"`{PREFIX}reminder list` o `{PREFIX}reminder ls`", "Lista los recordatorios programados."),
+            (f"`{PREFIX}reminder remove ID` o `{PREFIX}reminder rm ID`", "Elimina un recordatorio programado."),
+            (f"`{PREFIX}reminder help`", "Muestra la ayuda.")
+        ]
+        embed = h.generate_embed()
+        return await ctx.send(embed=embed, delete_after=60)
