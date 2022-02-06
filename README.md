@@ -30,6 +30,7 @@ Estas variables pueden estar colocadas en un archivo `.env` dentro de la carpeta
 DISCORD_PREFIX=<my_discord_prefix> # !
 DISCORD_TOKEN=<my_token>
 FAUNADB_SECRET_KEY=<my_faunadb_secret_key>
+#Not required:
 EVENTS_CHANNEL_ID=<my_events_channel_id> # channel id de discord para publicar los tweets
 TWITTER_API_KEY=<twitter_api_key>
 TWITTER_API_SECRET=<twitter_api_secret>
