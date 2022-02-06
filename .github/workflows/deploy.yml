@@ -6,25 +6,46 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
-      - name: Build the docker image
-        run: docker build -t matebot-image:$(echo ${GITHUB_SHA} | cut -c1-8) .
-      - name: Stop the current container
-        continue-on-error: true
-        run: docker stop matebot
-      - name: Remove the current container
-        continue-on-error: true
-        run: docker rm matebot
-      - name: Remove old docker image
-        continue-on-error: true
-        run: docker rmi matebot-image:$(echo ${{ github.event.before }} | cut -c1-8)
-      - name: Run the new container
-        run: >
-          docker run -d --restart always
-          -e DISCORD_PREFIX=${{ secrets.DISCORD_PREFIX }}
-          -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
-          -e FAUNADB_SECRET_KEY=${{ secrets.FAUNADB_SECRET_KEY }}
-          --name matebot matebot-image:$(echo ${GITHUB_SHA} | cut -c1-8)
+    - name: Check out repository code
+      uses: actions/checkout@v2
+    - name: Copy repository contents via scp
+      uses: appleboy/scp-action@master
+      env:
+        HOST: ${{ secrets.SSH_HOST }}
+        USERNAME: ${{ secrets.SSH_USERNAME }}
+        KEY: ${{ secrets.SSH_KEY }}
+      with:
+        source: "."
+        target: "/Bots/matebot"
+
+    - name: Executing remote command
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        USERNAME: ${{ secrets.SSH_USERNAME }}
+        KEY: ${{ secrets.SSH_KEY }}
+        script: ls
+        
+#     steps:
+#       - name: Check out repository code
+#         uses: actions/checkout@v2
+#       - name: Build the docker image
+#         run: docker build -t matebot-image:$(echo ${GITHUB_SHA} | cut -c1-8) .
+#       - name: Stop the current container
+#         continue-on-error: true
+#         run: docker stop matebot
+#       - name: Remove the current container
+#         continue-on-error: true
+#         run: docker rm matebot
+#       - name: Remove old docker image
+#         continue-on-error: true
+#         run: docker rmi matebot-image:$(echo ${{ github.event.before }} | cut -c1-8)
+#       - name: Run the new container
+#         run: >
+#           docker run -d --restart always
+#           -e DISCORD_PREFIX=${{ secrets.DISCORD_PREFIX }}
+#           -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
+#           -e FAUNADB_SECRET_KEY=${{ secrets.FAUNADB_SECRET_KEY }}
+#           --name matebot matebot-image:$(echo ${GITHUB_SHA} | cut -c1-8)
