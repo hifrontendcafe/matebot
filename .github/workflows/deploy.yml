@@ -39,12 +39,7 @@ jobs:
           docker build -t matebot-image .
           docker stop matebot
           docker rm matebot
-          >
-          docker run -d --restart always
-          -e DISCORD_PREFIX=${{ secrets.DISCORD_PREFIX }}
-          -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
-          -e FAUNADB_SECRET_KEY=${{ secrets.FAUNADB_SECRET_KEY }}
-          --name matebot matebot-image
+          docker run -d --restart always -e DISCORD_PREFIX=${{ secrets.DISCORD_PREFIX }} -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} -e FAUNADB_SECRET_KEY=${{ secrets.FAUNADB_SECRET_KEY }} --name matebot matebot-image
           docker rmi matebot-image
 
 #     steps:
