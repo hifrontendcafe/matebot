@@ -28,7 +28,7 @@ jobs:
       - name: Run the new container
         run: >
           docker run -d --restart always
-          -e DISCORD_PREFIX=${{ secrets.DISCORD_PREFIX }}
-          -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
-          -e FAUNADB_SECRET_KEY=${{ secrets.FAUNADB_SECRET_KEY }}
+          -e "DISCORD_PREFIX=${{ secrets.DISCORD_PREFIX }}"
+          -e "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}"
+          -e "FAUNADB_SECRET_KEY=${{ secrets.FAUNADB_SECRET_KEY }}"
           --name matebot "matebot-image:$(echo ${GITHUB_SHA} | cut -c1-8)"
