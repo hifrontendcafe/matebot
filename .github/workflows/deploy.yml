@@ -18,7 +18,7 @@ jobs:
         KEY: ${{ secrets.SSH_KEY }}
       with:
         source: "."
-        target: "/Bots/matebot"
+        target: "~/Bots/matebot"
 
     - name: Executing remote command
       uses: appleboy/ssh-action@master
