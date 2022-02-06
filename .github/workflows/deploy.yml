@@ -15,7 +15,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Build the docker image
-        run: docker build -t matebot-image:$(echo ${GITHUB_SHA} | cut -c1-8) .
+        run: docker build -t "matebot-image:$(echo ${GITHUB_SHA} | cut -c1-8)" .
       - name: Stop the current container
         continue-on-error: true
         run: docker stop matebot
@@ -24,11 +24,11 @@ jobs:
         run: docker rm matebot
       - name: Remove old docker image
         continue-on-error: true
-        run: docker rmi matebot-image:$(echo ${{ github.event.before }} | cut -c1-8)
+        run: docker rmi "matebot-image:$(echo ${{ github.event.before }} | cut -c1-8)"
       - name: Run the new container
         run: >
           docker run -d --restart always
           -e DISCORD_PREFIX=${{ secrets.DISCORD_PREFIX }}
           -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
           -e FAUNADB_SECRET_KEY=${{ secrets.FAUNADB_SECRET_KEY }}
-          --name matebot matebot-image:$(echo ${GITHUB_SHA} | cut -c1-8)
+          --name matebot "matebot-image:$(echo ${GITHUB_SHA} | cut -c1-8)"
