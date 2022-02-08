@@ -3,8 +3,7 @@
 import os
 import re
 import logging
-import asyncio
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 
 import dateparser
 from discord import Embed, Colour
@@ -75,11 +74,6 @@ class Reminders(commands.Cog):
         # Defino los recodatorios
         self.reminder.reminders = []
 
-        self.emoji = {
-            'OK': "\N{BALLOT BOX WITH CHECK}\N{VARIATION SELECTOR-16}",
-            'CANCEL': "\N{NO ENTRY SIGN}"
-        }
-
     @staticmethod
     def _process_date_time(date, time):
         date_time = dateparser.parse(f'le {date} {time} -03:00')
@@ -87,18 +81,19 @@ class Reminders(commands.Cog):
         date_time_now = datetime.now(tz)
         if date_time is None:
             return Error.DATETIME
-        # elif date_time.strftime("%z") is "":
-        #     return Error.TIMEZONE
         elif date_time < date_time_now:
             return Error.DATE_HAS_PASSED
         else:
             return date_time
 
     @staticmethod
-    def colour():
-        # green: 0x00c29d
-        # red: 0xe62f48
-        return Colour.purple().value
+    def colour(colour_type: str) -> int:
+        colour = {
+            'ERROR': Colour.red().value,
+            'INFO': Colour.blue().value,
+            'WARNING': Colour.yellow().value,
+        }
+        return colour[colour_type]
 
     @staticmethod
     def _process_author(author):
@@ -118,7 +113,7 @@ class Reminders(commands.Cog):
     def _generate_list(self, docs):
         fields = []
         for doc in docs:
-            title = f"🟣 {doc['data']['content'][0]}"
+            title = f"📅 {doc['data']['content'][0]}"
             channel = f"**Canal**: <#{doc['data']['channel']}>"
             date, time, _ = doc['data']['str_time'].split(' | ')
             date = '-'.join(date.split('-')[::-1])
@@ -133,7 +128,7 @@ f"""
 {author} | {ref_id}            
 """
             ))
-        embed = Embed(title="Lista de recordatorios", color=self.colour())
+        embed = Embed(title="Lista de recordatorios", color=self.colour(colour_type='INFO'))
         for field in fields:
             embed.add_field(name=field[0], value=field[1], inline=False)
         return embed
@@ -146,7 +141,6 @@ f"""
     async def action(self, msg, content, channel_id):
         channel = self.bot.get_channel(int(channel_id))
         await channel.send(f"Hola {content[2]}! <:fecimpostor:755971090471321651>", embed=msg)
-        # await channel.send()
 
     # Comandos del bot
 
@@ -215,7 +209,6 @@ Escribe el mensaje y aprieta <Enter>
         self.add_reminder["text"] = msg.content
         await msg_bot.delete()
         await msg.delete()
-        print(self.add_reminder)
 
         # Paso 3: Nombre del recordatorio
         e.description = ""
@@ -229,7 +222,6 @@ Escribe el mensaje y aprieta <Enter>
         self.add_reminder["title"] = msg.content
         await msg_bot.delete()
         await msg.delete()
-        print(self.add_reminder)
 
         # Paso 4: Descripción del recordatorio
         e.fields= [("¿Descripción del recordatorio?", """
@@ -242,7 +234,6 @@ Escribe el mensaje y aprieta <Enter>
         self.add_reminder["description"] = msg.content
         await msg_bot.delete()
         await msg.delete()
-        print(self.add_reminder)
 
         # Paso 5: Canal de publicación del recordatorio
         e.fields= [("¿En cuál canal publicar el recordatorio?", """
@@ -255,15 +246,14 @@ Escribe el mensaje y aprieta <Enter>
         channel_check = self._process_channel(msg.content)
         if channel_check is Error.CHANNEL:
             embed = Embed(
-                title="Error",
-                description="Por favor, elija un canal válido.",
-                color=self.colour()
+                title="🟥 Error",
+                description="Por favor, elija un canal válido.\nTipee `#nombre-del-canal`.",
+                color=self.colour(colour_type='ERROR')
             )
             return await ctx.send(embed=embed, delete_after=60)
         self.add_reminder["channel"] = msg.content
         await msg_bot.delete()
         await msg.delete()
-        print(self.add_reminder)
 
         # Paso 6: Recordatorio único o recurrente
         e.fields= [
@@ -292,30 +282,40 @@ El formato a seguir es: dd/mm/yyyy HH:MM
 Ejemplo: 28/01/2022 19:13
 Escribe el mensaje y aprieta <Enter>
 """)]
-            embed = e.generate_embed()
-            msg_bot = await ctx.send(embed=embed)
-            msg = await self.bot.wait_for('message', check=check)
-            rem_date, rem_time = msg.content.split(" ")
-            date_time = self._process_date_time(date=rem_date, time=rem_time)
-            if date_time is Error.DATETIME:
+            try:
+                embed = e.generate_embed()
+                msg_bot = await ctx.send(embed=embed)
+                msg = await self.bot.wait_for('message', check=check)
+                rem_date, rem_time = msg.content.split(" ")
+                date_time = self._process_date_time(date=rem_date, time=rem_time)
+                if date_time is Error.DATETIME:
+                    embed = Embed(
+                        title="🟥 Error: Formato inválido",
+                        description="""Por favor, expecifique con mas detalles la fecha del evento.
+    Ejemplo: `07/02/2022 21:19`""",
+                        color=self.colour(colour_type='ERROR')
+                    )
+                    return await ctx.send(embed=embed, delete_after=60)
+                elif date_time is Error.DATE_HAS_PASSED:
+                    embed = Embed(
+                        title="🟥 Error: Fecha pasada",
+                        description="""Por favor, defina una fecha y hora posterior a la actual.
+    Recuerde que la hora está en GMT-3 (Zona horaria de Argentina)""",
+                        color=self.colour(colour_type='ERROR')
+                    )
+                    return await ctx.send(embed=embed, delete_after=60)
+                self.add_reminder["date"] = rem_date
+                self.add_reminder["time"] = rem_time
+                await msg_bot.delete()
+                await msg.delete()
+            except ValueError:
                 embed = Embed(
-                    title="Error: fecha y hora",
-                    description="Por favor, expecifique con mas detalles la fecha del evento.",
-                    color=self.colour()
+                    title="🟥 Error: Formato inválido",
+                    description="""Por favor, expecifique con mas detalles la fecha del evento.
+Ejemplo: `07/02/2022 21:19`""",
+                    color=self.colour(colour_type='ERROR')
                 )
                 return await ctx.send(embed=embed, delete_after=60)
-            elif date_time is Error.DATE_HAS_PASSED:
-                embed = Embed(
-                    title="Error: fecha pasada",
-                    description="Por favor, defina una fecha y hora posterior a la actual.",
-                    color=self.colour()
-                )
-                return await ctx.send(embed=embed, delete_after=60)
-            self.add_reminder["date"] = rem_date
-            self.add_reminder["time"] = rem_time
-            await msg_bot.delete()
-            await msg.delete()
-            print(self.add_reminder)
 
         # Paso final: Resumen
         e.description = f"""
@@ -392,7 +392,7 @@ siguiente manera:
             embed = self._generate_list(docs)
             await ctx.send(embed=embed, delete_after=60)
         else:
-            embed = Embed(title="Lista Vacía")
+            embed = Embed(title="🟨 Lista Vacía", color=self.colour(colour_type='WARNING'))
             await ctx.send(embed=embed, delete_after=60)
 
 
@@ -407,7 +407,7 @@ siguiente manera:
         log.info("Reminder remove")
         doc = await self.reminder.remove(id_, str(ctx.author))
         if doc:
-            title = f"🟣 {doc['data']['content'][0]}"
+            title = f"📆 {doc['data']['content'][0]}"
             channel = f"**Canal**: <#{doc['data']['channel']}>"
             date, time, _ = doc['data']['str_time'].split(' | ')
             date = '-'.join(date.split('-')[::-1])
@@ -422,11 +422,11 @@ f"""
 {author} | {ref_id}            
 """
             ]
-            embed = Embed(title="Recordatorio eliminado", color=self.colour())
+            embed = Embed(title="🟦 Recordatorio eliminado", color=self.colour(colour_type='INFO'))
             embed.add_field(name=field[0], value=field[1], inline=False)
             await ctx.send(embed=embed, delete_after=60)
         else:
-            embed = Embed(title="ID no encontrado o no eres el propiteario del evento", color=self.colour())
+            embed = Embed(title="🟨 ID no encontrado o no eres el propiteario del evento", color=self.colour(colour_type='WARNING'))
             await ctx.send(embed=embed, delete_after=60)
 
 
