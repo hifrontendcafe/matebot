@@ -91,7 +91,7 @@ class Reminders(commands.Cog):
         colour = {
             'ERROR': Colour.red().value,
             'INFO': Colour.blue().value,
-            'WARNING': Colour.yellow().value,
+            'WARNING': Colour.gold().value,
         }
         return colour[colour_type]
 
