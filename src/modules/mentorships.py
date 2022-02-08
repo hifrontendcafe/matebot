@@ -59,7 +59,7 @@ class Mentorship(Cog):
                 await member.remove_roles(menteeRole)
                 message = f"""
 > :pray: {user} esperamos que hayas tenido una buena experiencia, recuerda darnos feedback para continuar mejorando!
-> https://tiny.cc/fec-mentoria-feedback
+> https://go.frontend.cafe/feedback
 """
                 await ctx.channel.send(message)
 
