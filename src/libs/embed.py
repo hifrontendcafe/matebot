@@ -6,7 +6,7 @@ class EmbedGenerator:
     """ Embed base para generar el mensaje de ayuda. """
 
     def __init__(self, ctx: commands.Context):
-        self._author = (f"{ctx.me.name}", f"{ctx.me.avatar}")
+        self._author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
         self._colour = 0x00c29d
 
     @property
