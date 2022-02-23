@@ -31,7 +31,7 @@ class Database:
         self.q = q
         self.client = FaunaClient(secret=secret)
 
-    def create(self, collection: str, data):
+    def create(self, collection: str, data) -> dict:
         """ Creo un documento en una colección existente
 
         create("my_collection", {"name": "John", "age": 30})
