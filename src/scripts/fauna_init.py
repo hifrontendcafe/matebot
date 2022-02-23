@@ -62,7 +62,7 @@ except:
 # Index para buscar todos los documentos
 # que contengan el campo time y devuelve [{time, ref}]
 try:
-    client.query(
+    resp = client.query(
         q.create_index(
             {
                 "name": "all_events_by_time",
@@ -80,7 +80,7 @@ except:
 
 # Index para buscar por author
 try:
-    client.query(
+    resp = client.query(
         q.create_index(
             {
                 "name": "events_by_author",
@@ -97,7 +97,7 @@ except:
 
 # Index para buscar por id y author
 try:
-    client.query(
+    resp = client.query(
         q.create_index(
             {
                 "name": "event_by_id_and_author",

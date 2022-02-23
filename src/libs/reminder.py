@@ -152,7 +152,7 @@ class Reminder:
 
     # Funciones publicas
 
-    async def add(self, author: User, date: datetime, channel: str, content: str):
+    async def add(self, author: User, date: datetime, channel: str, content):
         """Agrega un nuevo evento y crea los recordatorios"""
 
         try:
