@@ -1,6 +1,6 @@
 discord.py==1.7.2
 python-dotenv==0.15.0
-apscheduler==3.8.1
+apscheduler==3.9.1
 faunadb==4.2.0
 TwitterAPI==2.6.5
 beautifulsoup4==4.9.3
