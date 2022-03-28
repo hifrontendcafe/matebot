@@ -76,7 +76,7 @@ class Reminders(commands.Cog):
 
     @staticmethod
     def _process_date_time(date, time):
-        date_time = dateparser.parse(f'{date} {time} -03:00')
+        date_time = dateparser.parse(f'le {date} {time} -03:00')
         tz = pytz.timezone('America/Buenos_Aires')
         date_time_now = datetime.now(tz)
         if date_time is None:
