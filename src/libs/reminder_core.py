@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 import logging
+import sys
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord import User
+import pytz
 from libs.database import Database as DB
 
 log = logging.getLogger(__name__)
@@ -101,7 +103,7 @@ class ReminderCore:
                 start_date=cron.get('start_date'),
                 end_date=cron.get('end_date'),
                 timezone=cron.get('timezone'),
-                args=[event['message'], event['content'], event['channel']]
+                args=[event['content'][0], event['content'][2], event['channel']] # message, embed, channel
             )
             return job.id
         elif event['type'] == 'date':
@@ -109,20 +111,20 @@ class ReminderCore:
                 self.action,
                 'date',
                 run_date=event['time'],
-                args=[event['message'], event['channel']]
+                args=[event['content'][0], event['content'][2], event['channel']] # message, embed, channel
             )
             return job.id
         else:
             log.warn("Event type has to be 'cron' or 'date': %s", event)
 
 
-    def _generate_event(self, trigger, trigger_data, author, channel, message):
+    def _generate_event(self, trigger, trigger_data, author, channel, content):
         if trigger == 'cron':
             return {
                 'author':    str(author),
                 'author_id': str(author.id),
                 'channel':   str(channel),
-                'message':   message,
+                'content':   content,
                 'cron':      trigger_data,
                 'type':      'cron'
             }
@@ -131,7 +133,7 @@ class ReminderCore:
                 'author':    str(author),
                 'author_id': str(author.id),
                 'channel':   str(channel),
-                'message':   message,
+                'content':   content,
                 'time':      trigger_data,
                 'type':      'date'
             }
@@ -195,6 +197,7 @@ class ReminderCore:
             return self.db.create(self.collection, data)
         except:
             # Si el formato de la fecha es incorrecto
+            log.error(f'Error... {sys.exc_info()[0]}')
             return None
 
 
@@ -213,18 +216,17 @@ class ReminderCore:
         for doc in docs['data']:
             event = {}
             event_type = doc['data']['type']
-
             if event_type == 'cron':
                 event = {
                     'channel': doc['data']['channel'],
-                    'message': doc['data']['message'],
+                    'content': doc['data']['content'],
                     'cron':    doc['data']['cron'],
                     'type':    'cron'
                 }
             elif event_type == 'date':
                 event = {
                     'channel': doc['data']['channel'],
-                    'message': doc['data']['message'],
+                    'content': doc['data']['content'],
                     'time':    datetime.fromisoformat(f"{doc['data']['time'].value[:-1]}+00:00"),
                     'type':    'date'
                 }

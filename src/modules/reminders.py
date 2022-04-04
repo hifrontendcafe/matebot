@@ -3,6 +3,7 @@
 import os
 import re
 import logging
+from enum import Enum
 from datetime import datetime, timedelta
 
 import dateparser
@@ -10,10 +11,11 @@ from discord import Embed, Colour
 from discord.ext import commands
 import pytz
 
-from libs.reminder import Reminder
+from libs.reminder_core import ReminderCore
+from libs.database import Database as DB
 from libs.embed import EmbedGenerator
+from scripts.embeds_reminder import addressee_reminder, channel_reminder, create_reminder_embed, date_reminder, description_reminder, title_reminder, type_reminder
 
-from enum import Enum
 
 class Error(Enum):
     DATETIME        = 1
@@ -30,7 +32,7 @@ class Reminders(commands.Cog):
 
     Programa un recordatorio y da el aviso en:
     - Una fecha y hora exáctos (único aviso)
-    - Cada semana/quincena/mes en un día exacto (periódicos)
+    - Cada semana/mes en un día exacto (periódicos)
 
     ### Comandos:
 
@@ -52,14 +54,15 @@ class Reminders(commands.Cog):
             "description": "",
             "text": "",
             "channel": 0,
-            "type": 0,
+            "type": None,
             "day": "",
             "time": "",
             "date": "",
             "author_id": ""
         }
 
-        self._reminder = Reminder(secret)
+        self.db = DB(secret)
+        self._reminder = ReminderCore(self.db)
 
         # Nombre de la colección de la DB
         self._reminder.collection = "Events"
@@ -71,8 +74,6 @@ class Reminders(commands.Cog):
         }
         # Defino la función que se utiliza para ejecutar los eventos
         self._reminder.action = self.action
-        # Defino los recodatorios
-        self._reminder.reminders = []
 
     @staticmethod
     def _process_date_time(date, time):
@@ -115,7 +116,8 @@ class Reminders(commands.Cog):
     def _generate_list(self, docs):
         fields = []
         for doc in docs:
-            title = f"📅 {doc['data']['content'][0]}"
+            _, title, description = doc['data']['message'].split('\n')
+            # title = f"📅 {doc['data']['content'][0]}"
             channel = f"**Canal**: <#{doc['data']['channel']}>"
             date, time, _ = doc['data']['str_time'].split(' | ')
             date = '-'.join(date.split('-')[::-1])
@@ -140,9 +142,9 @@ f"""
         permission = author.permissions_in(channel)
         return permission.send_messages
 
-    async def action(self, msg, content, channel_id):
+    async def action(self, msg, embed, channel_id):
         channel = self.bot.get_channel(int(channel_id))
-        await channel.send(f"Hola {content[2]}! <:fecimpostor:755971090471321651>", embed=msg)
+        await channel.send(f"{msg}! <:fecimpostor:755971090471321651>", embed=embed)
 
     # Comandos del bot
 
@@ -160,7 +162,6 @@ f"""
 
 
     @reminder.command()
-    # async def add(self, ctx, *text):
     async def add(self, ctx):
         """ Comando reminder add
 
@@ -168,158 +169,40 @@ f"""
         """
 
         log.info("Reminder add")
-        e = EmbedGenerator(ctx)
-
-        def check(msg):
-            if ctx.author == msg.author:
-                self.add_reminder["author_id"] = ctx.author.id
-                return msg
 
         def check_reaction(reaction, user):
             return ctx.author == user
 
         # Paso 1: Inicio de creación del recordatorio
-        e.title = "[ADD] Agregar recordatorio"
-        e.description = """
-Hola! A continuación, te pediré los datos necesarios para crear uno o varios recordatorios. Sigue los pasos con atención!
-
-Antes de terminar, te mostraré el resultado final a modo de vista previa.
-"""
-        e.fields= [("Reacciones", """
-✅ Ok, empecemos!
-❌ Nop, lo haré en otro momento
-""")]
-        embed = e.generate_embed()
-        msg = await ctx.send(embed=embed)
-        await msg.add_reaction(emoji="✅")
-        await msg.add_reaction(emoji="❌")
-        reaction, user = await self.bot.wait_for('reaction_add', check=check_reaction)
-        await msg.delete()
-        if reaction.emoji == "❌":
-            await ctx.send("👍")
-            return
+        emoji_selection = await create_reminder_embed(ctx, self.bot)
+        if emoji_selection == "❌":  return await ctx.send("👍")
 
         # Paso 2: Destinatarios del recordatorio
-        e.description = ""
-        e.fields= [("¿Destinatarios del recordatorio?", """
-Puedes colocar menciones a users y/o roles del FrontendCafé. **No se verán dentro del embed!**
-Escribe el mensaje y aprieta <Enter>
-""")]
-        embed = e.generate_embed()
-        msg_bot = await ctx.send(embed=embed)
-        msg = await self.bot.wait_for('message', check=check)
-        self.add_reminder["text"] = msg.content
-        await msg_bot.delete()
-        await msg.delete()
+        text, author_id = await addressee_reminder(ctx, self.bot)
+        self.add_reminder["text"] = text
+        self.add_reminder["author_id"] = author_id
 
         # Paso 3: Nombre del recordatorio
-        e.description = ""
-        e.fields= [("¿Nombre del recordatorio?", """
-En lo posible, debe ser corto y descriptivo.
-Escribe el mensaje y aprieta <Enter>
-""")]
-        embed = e.generate_embed()
-        msg_bot = await ctx.send(embed=embed)
-        msg = await self.bot.wait_for('message', check=check)
-        self.add_reminder["title"] = msg.content
-        await msg_bot.delete()
-        await msg.delete()
+        self.add_reminder["title"] = await title_reminder(ctx, self.bot)
 
         # Paso 4: Descripción del recordatorio
-        e.fields= [("¿Descripción del recordatorio?", """
-Puede ser más largo, hasta 256 caractéres.
-Escribe el mensaje y aprieta <Enter>
-""")]
-        embed = e.generate_embed()
-        msg_bot = await ctx.send(embed=embed)
-        msg = await self.bot.wait_for('message', check=check)
-        self.add_reminder["description"] = msg.content
-        await msg_bot.delete()
-        await msg.delete()
+        self.add_reminder["description"] = await description_reminder(ctx, self.bot)
 
         # Paso 5: Canal de publicación del recordatorio
-        e.fields= [("¿En cuál canal publicar el recordatorio?", """
-Presiona # y acontinuación el nombre del canal.
-Escribe el mensaje y aprieta <Enter>
-""")]
-        embed = e.generate_embed()
-        msg_bot = await ctx.send(embed=embed)
-        msg = await self.bot.wait_for('message', check=check)
-        channel_check = self._process_channel(msg.content)
-        if channel_check is Error.CHANNEL:
-            embed = Embed(
-                title="🟥 Error",
-                description="Por favor, elija un canal válido.\nTipee `#nombre-del-canal`.",
-                color=self.colour(colour_type='ERROR')
-            )
-            return await ctx.send(embed=embed, delete_after=60)
-        self.add_reminder["channel"] = msg.content
-        await msg_bot.delete()
-        await msg.delete()
+        self.add_reminder["channel"] = await channel_reminder(ctx, self.bot, self._process_channel, self.colour)
 
         # Paso 6: Recordatorio único o recurrente
-        e.fields= [
-            ("¿El recordatorio es único?", "Elije una opción"),
-            ("Reacciones", """
-1️⃣ Debe publicarse en una fecha exacta (será único)
-~~2️⃣ Se repite un día en específico cada semana~~ (Próximamente)
-~~3️⃣ Se repite un día en específico cada quincena~~ (Próximamente)
-~~4️⃣ Se repite un día en específico cada mes~~ (Próximamente)
-""")
-        ]
-        embed = e.generate_embed()
-        msg_bot = await ctx.send(embed=embed)
-        # emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
-        emojis = ["1️⃣"]
-        for emoji in emojis:
-            await msg_bot.add_reaction(emoji=emoji)
-        reaction, user = await self.bot.wait_for('reaction_add', check=check_reaction)
-        self.add_reminder["type"] = emojis.index(reaction.emoji)
-        await msg_bot.delete()
+        self.add_reminder["type"] = await type_reminder(ctx, self.bot)
 
-        if self.add_reminder["type"] == 0:
-        # Paso a7: Día y hora del recordatorio
-            e.fields= [("¿Día y hora del recordatorio?", """
-El formato a seguir es: dd/mm/yyyy HH:MM
-Ejemplo: 28/01/2022 19:13
-Escribe el mensaje y aprieta <Enter>
-""")]
-            try:
-                embed = e.generate_embed()
-                msg_bot = await ctx.send(embed=embed)
-                msg = await self.bot.wait_for('message', check=check)
-                rem_date, rem_time = msg.content.split(" ")
-                date_time = self._process_date_time(date=rem_date, time=rem_time)
-                if date_time is Error.DATETIME:
-                    embed = Embed(
-                        title="🟥 Error: Formato inválido",
-                        description="""Por favor, expecifique con mas detalles la fecha del evento.
-    Ejemplo: `07/02/2022 21:19`""",
-                        color=self.colour(colour_type='ERROR')
-                    )
-                    return await ctx.send(embed=embed, delete_after=60)
-                elif date_time is Error.DATE_HAS_PASSED:
-                    embed = Embed(
-                        title="🟥 Error: Fecha pasada",
-                        description="""Por favor, defina una fecha y hora posterior a la actual.
-    Recuerde que la hora está en GMT-3 (Zona horaria de Argentina)""",
-                        color=self.colour(colour_type='ERROR')
-                    )
-                    return await ctx.send(embed=embed, delete_after=60)
-                self.add_reminder["date"] = rem_date
-                self.add_reminder["time"] = rem_time
-                await msg_bot.delete()
-                await msg.delete()
-            except ValueError:
-                embed = Embed(
-                    title="🟥 Error: Formato inválido",
-                    description="""Por favor, expecifique con mas detalles la fecha del evento.
-Ejemplo: `07/02/2022 21:19`""",
-                    color=self.colour(colour_type='ERROR')
-                )
-                return await ctx.send(embed=embed, delete_after=60)
+        if self.add_reminder["type"] == "date":
+        # Paso 7-date: Día y hora del recordatorio
+            rem_date, rem_time = await date_reminder(ctx, self.bot, self._process_date_time, self.colour)
+            self.add_reminder["date"] = rem_date
+            self.add_reminder["time"] = rem_time
 
         # Paso final: Resumen
+        e = EmbedGenerator(ctx)
+        e.title = "[ADD] Agregar recordatorio"
         e.description = f"""
 Perfecto! El recordatorio quedaría de la
 siguiente manera:
@@ -328,10 +211,9 @@ siguiente manera:
 {self.add_reminder["description"]}
 {self.add_reminder["channel"]}
 {self.add_reminder["date"]} {self.add_reminder["time"]}
-{'__Recordatorio único__' if self.add_reminder["type"] == 0 else ''}
-{'__Recordatorio semanal__' if self.add_reminder["type"] == 1 else ''}
-{'__Recordatorio quincenal__' if self.add_reminder["type"] == 2 else ''}
-{'__Recordatorio mensual__' if self.add_reminder["type"] == 3 else ''}
+{'__Recordatorio único__' if self.add_reminder["type"] == "date" else ''}
+{'__Recordatorio semanal__' if self.add_reminder["type"] == "cron" else ''}
+{'__Recordatorio mensual__' if self.add_reminder["type"] == "cron" else ''}
 """
         e.fields= [("Reacciones", """
 ✅ Se ve bien, crear evento!
@@ -341,45 +223,45 @@ siguiente manera:
         msg = await ctx.send(embed=embed)
         await msg.add_reaction(emoji="✅")
         await msg.add_reaction(emoji="❌")
-        reaction, user = await self.bot.wait_for('reaction_add', check=check_reaction)
+        reaction, _ = await self.bot.wait_for('reaction_add', check=check_reaction)
         await msg.delete()
         if reaction.emoji == "❌":
-            await ctx.send("👍")
-            return
+            return await ctx.send("❌ Creación de recordatorio cancelado!")
         else:
             author = self.bot.get_user(self.add_reminder["author_id"])
-            date_time = dateparser.parse(f'{self.add_reminder["date"]} {self.add_reminder["time"]} -03:00')
+            date_time = dateparser.parse(f'le {self.add_reminder["date"]} {self.add_reminder["time"]} -03:00')
             if date_time == None:
                 return
             channel_id = self._process_channel(self.add_reminder["channel"])
+
             e.title = f"[Recordatorio] {self.add_reminder['title']}"
             e.description = self.add_reminder['description']
-            e.fields = [("Pro tip", f"Con el comando `{self.PREFIX}reminder help` puedes ver todos los comandos para recordatorios")]
+            e.fields = [("Matetip <:fecmate:960390626954854441>", f"Con el comando `{self.PREFIX}reminder help` puedes ver todos los comandos para recordatorios")]
             embed = e.generate_embed()
-            self._reminder.reminders = [
-                {"delta": timedelta(minutes=1), "message": embed},
+            content = [
+                self.add_reminder['text'], # Para ver en el mensaje fuera del embed
+                self.add_reminder['title'], # Para ver el recordatorio en la lista
+                embed # Embed
             ]
-            doc = await self._reminder.add(
-                author,
-                date_time,
-                str(channel_id),
-                [
-                    self.add_reminder["title"],
-                    self.add_reminder["description"],
-                    self.add_reminder["text"],
-                    self.add_reminder["type"]
-                ]
-            )
+            doc = None
+            if self.add_reminder["type"] == "date":
+                doc = await self._reminder.add_date(
+                    author=author,
+                    channel=str(channel_id),
+                    content=content,
+                    time=date_time
+                )
+                log.info(f'Doc Fauna: {doc}')
             if doc != None:
                 e.title = f"Recordatorio creado!"
                 e.description = "Guarda el ID para poder borrar el recordatorio en cualquier momento"
                 e.fields = [(
                     "ID del recordatorio", doc['ref'].id()
                 )]
-            embed = e.generate_embed()
-            await ctx.send(embed=embed)
+                embed = e.generate_embed()
+                await ctx.send(embed=embed) # Send embed to channel
             try:
-                await author.send(embed=embed)
+                await author.send(embed=embed) # Send embed to author by DM
             except Exception:
                 pass
 
