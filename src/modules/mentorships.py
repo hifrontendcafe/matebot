@@ -51,7 +51,7 @@ class Mentorship(Cog):
         '''
         await ctx.message.delete()
         if self.validateDiscordUser(user):
-            userId = int(user[3:-1])
+            userId = re.search(r'\d+', user).group()
             member = await ctx.guild.fetch_member(userId)
             menteeRole = discord.utils.get(ctx.guild.roles, name="Mentees")
 
@@ -108,18 +108,22 @@ class Mentorship(Cog):
         h.description = f"Lista de comandos para {PREFIX}mentee"
         h.fields = [
             (f"{PREFIX}mentee @usuario", "Agregar/quitar rol de Mentee."),
-            (f"{PREFIX}mentee add @usuario", "Registra una mentoría y a la vez verifica si ese usuario tiene warnings."),
-            (f"{PREFIX}mentee check @usuario", "Verifica si el usuario tiene warnings."),
-            (f"{PREFIX}mentee warn @usuario", 'Dar warning a un usuario con motivo "Ausencia a la mentoría"'),
-            (f"{PREFIX}mentee warn @usuario <motivo>", f'Dar warning a un usuario con motivo personalizado. Ejemplo:\n`{PREFIX}mentee warn @usuario Llegada tarde y falta de respeto`'),
-            (f"{PREFIX}mentee warn_rm @usuario", "Remover 1 warning al usuario."),
+            (f"{PREFIX}mentee add @usuario",
+             "Registra una mentoría y a la vez verifica si ese usuario tiene warnings."),
+            (f"{PREFIX}mentee check @usuario",
+             "Verifica si el usuario tiene warnings."),
+            (f"{PREFIX}mentee warn @usuario",
+             'Dar warning a un usuario con motivo "Ausencia a la mentoría"'),
+            (f"{PREFIX}mentee warn @usuario <motivo>",
+             f'Dar warning a un usuario con motivo personalizado. Ejemplo:\n`{PREFIX}mentee warn @usuario Llegada tarde y falta de respeto`'),
+            (f"{PREFIX}mentee warn_rm @usuario",
+             "Remover 1 warning al usuario."),
             (f"{PREFIX}mentee warn_ls", "Exportar lista de warnings.")
         ]
 
         embed = h.generate_embed()
 
         await ctx.send(embed=embed, delete_after=60)
-
 
     @help.error
     async def mentee_error(self, ctx, error):
@@ -133,7 +137,7 @@ class Mentorship(Cog):
     @has_any_role('admin-mentors', 'Mentors')
     async def warn(self, ctx, user, *reason):
         if self.validateDiscordUser(user):
-            userId = int(user[3:-1])
+            userId = int(re.search(r'\d+', user).group())
             member = await ctx.guild.fetch_member(userId)
             menteeRole = discord.utils.get(ctx.guild.roles, name="Mentees")
             await member.remove_roles(menteeRole)
@@ -158,7 +162,7 @@ class Mentorship(Cog):
 
             try:
                 await ctx.message.delete()
-                userId = user[3:-1]
+                userId = int(re.search(r'\d+', user).group())
                 member = await ctx.guild.fetch_member(userId)
                 mentee = self.db.get_mentee_by_discord_id(userId)
                 history = mentee['data']['history']
@@ -202,7 +206,8 @@ class Mentorship(Cog):
             except Exception as e:
                 if type(e) is faunadb.errors.NotFound:
                     history = [history_content]
-                    db_add(self, str(member.id), member.display_name, 1, history)
+                    db_add(self, str(member.id),
+                           member.display_name, 1, history)
 
                     # Send warn message
                     message = f"""
@@ -229,7 +234,7 @@ class Mentorship(Cog):
                 else:
                     print(e)
         else:
-                await ctx.channel.send(f"Usuario no válido, por favor etiquetar a un usuario de discord con '@'", delete_after=30)
+            await ctx.channel.send(f"Usuario no válido, por favor etiquetar a un usuario de discord con '@'", delete_after=30)
 
     @warn.error
     async def mentee_error(self, ctx, error):
@@ -251,7 +256,7 @@ class Mentorship(Cog):
 
         try:
             await ctx.message.delete()
-            userId = user[3:-1]
+            userId = int(re.search(r'\d+', user).group())
             member = await ctx.guild.fetch_member(userId)
             mentee = self.db.get_mentee_by_discord_id(userId)
             if mentee['data']['warns_quantity'] > 0:
@@ -371,7 +376,7 @@ class Mentorship(Cog):
         '''
         try:
             await ctx.message.delete()
-            userId = user[3:-1]
+            userId = int(re.search(r'\d+', user).group())
             member = await ctx.guild.fetch_member(userId)
             mentee = self.db.get_mentee_by_discord_id(userId)
             # Send message
@@ -437,12 +442,13 @@ class Mentorship(Cog):
 
         try:
             await ctx.message.delete()
-            userId = user[3:-1]
+            userId = int(re.search(r'\d+', user).group())
             member = await ctx.guild.fetch_member(userId)
             mentee = self.db.get_mentee_by_discord_id(userId)
 
             if mentee['data']['warns_quantity'] > 0:
-                adminMentorsRole = discord.utils.get(ctx.guild.roles, name="admin-mentors")
+                adminMentorsRole = discord.utils.get(
+                    ctx.guild.roles, name="admin-mentors")
                 # Send message
                 message = f"""
 > :no_entry:  **Solicitud de mentoría rechazada**
