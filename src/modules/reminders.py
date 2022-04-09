@@ -116,8 +116,7 @@ class Reminders(commands.Cog):
     def _generate_list(self, docs):
         fields = []
         for doc in docs:
-            _, title, description = doc['data']['message'].split('\n')
-            # title = f"📅 {doc['data']['content'][0]}"
+            title = f"📅 {doc['data']['content'][0]}"
             channel = f"**Canal**: <#{doc['data']['channel']}>"
             date, time, _ = doc['data']['str_time'].split(' | ')
             date = '-'.join(date.split('-')[::-1])
