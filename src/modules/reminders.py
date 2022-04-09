@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 import dateparser
 from discord import Embed, Colour
 from discord.ext import commands
-import pytz
+import zoneinfo
 
 from libs.reminder_core import ReminderCore
 from libs.database import Database as DB
@@ -61,7 +61,8 @@ class Reminders(commands.Cog):
             "author_id": ""
         }
 
-        self.db = DB(secret)
+        if secret != None:
+            self.db = DB(secret)
         self._reminder = ReminderCore(self.db)
 
         # Nombre de la colección de la DB
@@ -78,7 +79,7 @@ class Reminders(commands.Cog):
     @staticmethod
     def _process_date_time(date, time):
         date_time = dateparser.parse(f'le {date} {time} -03:00')
-        tz = pytz.timezone('America/Buenos_Aires')
+        tz = zoneinfo.ZoneInfo('America/Buenos_Aires')
         date_time_now = datetime.now(tz)
         if date_time is None:
             return Error.DATETIME
@@ -116,7 +117,7 @@ class Reminders(commands.Cog):
     def _generate_list(self, docs):
         fields = []
         for doc in docs:
-            title = f"📅 {doc['data']['content'][0]}"
+            title = f"📅 {doc['data']['content']['title']}"
             channel = f"**Canal**: <#{doc['data']['channel']}>"
             date, time, _ = doc['data']['str_time'].split(' | ')
             date = '-'.join(date.split('-')[::-1])
@@ -141,7 +142,10 @@ f"""
         permission = author.permissions_in(channel)
         return permission.send_messages
 
-    async def action(self, msg, embed, channel_id):
+    async def action(self, msg, content, channel_id):
+        e = EmbedGenerator()
+        e.content = content
+        embed = e.generate_embed()
         channel = self.bot.get_channel(int(channel_id))
         await channel.send(f"{msg}! <:fecimpostor:755971090471321651>", embed=embed)
 
@@ -200,7 +204,8 @@ f"""
             self.add_reminder["time"] = rem_time
 
         # Paso final: Resumen
-        e = EmbedGenerator(ctx)
+        e = EmbedGenerator()
+        e.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
         e.title = "[ADD] Agregar recordatorio"
         e.description = f"""
 Perfecto! El recordatorio quedaría de la
@@ -237,21 +242,20 @@ siguiente manera:
             e.description = self.add_reminder['description']
             e.fields = [("Matetip <:fecmate:960390626954854441>", f"Con el comando `{self.PREFIX}reminder help` puedes ver todos los comandos para recordatorios")]
             embed = e.generate_embed()
-            content = [
-                self.add_reminder['text'], # Para ver en el mensaje fuera del embed
-                self.add_reminder['title'], # Para ver el recordatorio en la lista
-                embed # Embed
-            ]
-            doc = None
+            content = e.content
+
+            print(content)
+            doc = {}
             if self.add_reminder["type"] == "date":
                 doc = await self._reminder.add_date(
                     author=author,
                     channel=str(channel_id),
                     content=content,
+                    message=text,
                     time=date_time
                 )
                 log.info(f'Doc Fauna: {doc}')
-            if doc != None:
+            if doc != {}:
                 e.title = f"Recordatorio creado!"
                 e.description = "Guarda el ID para poder borrar el recordatorio en cualquier momento"
                 e.fields = [(
@@ -293,7 +297,7 @@ siguiente manera:
         log.info("Reminder remove")
         doc = await self._reminder.remove(id_, str(ctx.author))
         if doc:
-            title = f"📆 {doc['data']['content'][0]}"
+            title = f"📆 {doc['data']['content']['title']}"
             channel = f"**Canal**: <#{doc['data']['channel']}>"
             date, time, _ = doc['data']['str_time'].split(' | ')
             date = '-'.join(date.split('-')[::-1])
@@ -326,7 +330,8 @@ f"""
         log.info("Reminder Help")
         PREFIX = os.getenv("DISCORD_PREFIX")
 
-        h = EmbedGenerator(ctx)
+        h = EmbedGenerator()
+        h.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
         h.title = f"Ayuda del comando: `reminder`"
         h.description = ""
         h.fields = [

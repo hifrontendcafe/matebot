@@ -1,6 +1,6 @@
 from datetime import datetime
 from discord import Embed
-import pytz
+import zoneinfo
 
 from libs.embed import EmbedGenerator
 
@@ -10,8 +10,9 @@ async def create_reminder_embed(ctx, bot):
     """
     def check_reaction(reaction, user):
         return ctx.author == user
-    
-    e = EmbedGenerator(ctx)
+
+    e = EmbedGenerator()
+    e.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
     e.title = "[ADD] Agregar recordatorio"
     e.description = """
 Hola! A continuación, te pediré los datos necesarios para crear uno o varios recordatorios. Sigue los pasos con atención!
@@ -41,8 +42,9 @@ async def addressee_reminder(ctx, bot):
             return msg
         else:
             return None
-            
-    e = EmbedGenerator(ctx)
+
+    e = EmbedGenerator()
+    e.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
     e.title = "[ADD] Agregar recordatorio"
     e.description = ""
     e.fields= [("¿Destinatarios del recordatorio?", """
@@ -73,7 +75,8 @@ async def title_reminder(ctx, bot):
         else:
             return None
 
-    e = EmbedGenerator(ctx)
+    e = EmbedGenerator()
+    e.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
     e.title = "[ADD] Agregar recordatorio"
     e.description = ""
     e.fields= [("¿Nombre del recordatorio?", """
@@ -100,7 +103,8 @@ async def description_reminder(ctx, bot):
         else:
             return None
 
-    e = EmbedGenerator(ctx)
+    e = EmbedGenerator()
+    e.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
     e.title = "[ADD] Agregar recordatorio"
     e.description = ""
     e.fields= [("¿Descripción del recordatorio?", """
@@ -127,7 +131,8 @@ async def channel_reminder(ctx, bot, process_channel, colour):
         else:
             return None
 
-    e = EmbedGenerator(ctx)
+    e = EmbedGenerator()
+    e.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
     e.title = "[ADD] Agregar recordatorio"
     e.description = ""
     e.fields= [("¿En cuál canal publicar el recordatorio?", """
@@ -159,7 +164,8 @@ async def type_reminder(ctx, bot):
     """
     def check_reaction(reaction, user):
         return ctx.author == user
-    e = EmbedGenerator(ctx)
+    e = EmbedGenerator()
+    e.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
     e.title = "[ADD] Agregar recordatorio"
     e.description = ""
     e.fields= [
@@ -192,8 +198,9 @@ async def date_reminder(ctx, bot, process_date_time, colour):
         else:
             return None
 
-    tz = pytz.timezone('America/Buenos_Aires')
-    e = EmbedGenerator(ctx)
+    tz = zoneinfo.ZoneInfo('America/Buenos_Aires')
+    e = EmbedGenerator()
+    e.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
     e.title = "[ADD] Agregar recordatorio"
     e.description = ""
     e.fields= [("¿Día y hora del recordatorio?", f"""

@@ -5,9 +5,19 @@ from discord.ext import commands
 class EmbedGenerator:
     """ Embed base para generar el mensaje de ayuda. """
 
-    def __init__(self, ctx: commands.Context):
-        self._author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
+    def __init__(self):
         self._colour = 0x00c29d
+
+    @property
+    def author(self):
+        return self._author
+
+    @author.setter
+    def author(self, value):
+        if isinstance(value, tuple) and len(value) > 0:
+            self._author = (value[0], value[1])
+        else:
+            print("Please enter a tuple with 2 elements")
 
     @property
     def colour(self):
@@ -52,6 +62,22 @@ class EmbedGenerator:
             self._fields = value
         else:
             print("Please enter a list of tuples with 2 elements")
+
+    @property
+    def content(self):
+        return {
+            'title': self._title,
+            'description': self._description,
+            'author': {'name': self._author[0], 'icon_url': self._author[1]},
+            'fields': [{'name': field[0], 'value': field[1]} for field in self._fields]
+        }
+
+    @content.setter
+    def content(self, value):
+        self._title = value['title']
+        self._description = value['description']
+        self._author = (value['author']['name'], value['author']['icon_url'])
+        self._fields = [(v['name'], v['value']) for v in value['fields']]
 
     def generate_embed(self):
         thumbnail_url = "https://res.cloudinary.com/sebasec/image/upload/v1614807768/Fec_with_Shadow_jq8ll8.png"

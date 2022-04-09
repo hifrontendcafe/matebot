@@ -5,7 +5,6 @@ import logging
 import sys
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord import User
-import pytz
 from libs.database import Database as DB
 
 log = logging.getLogger(__name__)
@@ -103,7 +102,7 @@ class ReminderCore:
                 start_date=cron.get('start_date'),
                 end_date=cron.get('end_date'),
                 timezone=cron.get('timezone'),
-                args=[event['content'][0], event['content'][2], event['channel']] # message, embed, channel
+                args=[event['message'], event['content'], event['channel']] # message, embed, channel
             )
             return job.id
         elif event['type'] == 'date':
@@ -111,19 +110,20 @@ class ReminderCore:
                 self.action,
                 'date',
                 run_date=event['time'],
-                args=[event['content'][0], event['content'][2], event['channel']] # message, embed, channel
+                args=[event['message'], event['content'], event['channel']] # message, embed, channel
             )
             return job.id
         else:
             log.warn("Event type has to be 'cron' or 'date': %s", event)
 
 
-    def _generate_event(self, trigger, trigger_data, author, channel, content):
+    def _generate_event(self, trigger, trigger_data, author, channel, message, content):
         if trigger == 'cron':
             return {
                 'author':    str(author),
                 'author_id': str(author.id),
                 'channel':   str(channel),
+                'message':   message,
                 'content':   content,
                 'cron':      trigger_data,
                 'type':      'cron'
@@ -133,6 +133,7 @@ class ReminderCore:
                 'author':    str(author),
                 'author_id': str(author.id),
                 'channel':   str(channel),
+                'message':   message,
                 'content':   content,
                 'time':      trigger_data,
                 'type':      'date'
@@ -142,12 +143,12 @@ class ReminderCore:
 
 
     # Funciones publicas
-    async def add_cron(self, author: User, channel: str, content: str, cron: dict):
+    async def add_cron(self, author: User, channel: str, content: str, message: str, cron: dict):
         """Agrega un nuevo recordatio de tipo cron"""
 
         date_time_now = datetime.utcnow().replace(tzinfo=timezone.utc)
 
-        event = self._generate_event('cron', cron, author, channel, content)
+        event = self._generate_event('cron', cron, author, channel, message, content)
         job_id = self._create_job(event)
 
         # Guardo el evento en la base de datos
@@ -156,6 +157,7 @@ class ReminderCore:
             'author_id':  event['author_id'],
             'channel':    event['channel'],
             'content':    event['content'],
+            'message':       event['message'],
             'created_at': date_time_now.strftime("%Y-%m-%d | %H:%M | %z"),
             'cron':       event['cron'],
             'job':        job_id,
@@ -166,18 +168,23 @@ class ReminderCore:
         return self.db.create(self.collection, data)
 
 
-    async def add_date(self, author: User, channel: str, content: str, time: datetime):
+    async def add_date(self, author: User, channel: str, message: str, content, time: datetime) -> dict:
         """Agrega un nuevo recordatio de tipo date"""
 
         try:
             date_time = time
             date_time_now = datetime.utcnow().replace(tzinfo=timezone.utc)
 
+            log.info(f'Actual: {date_time_now}')
+            log.info(f'Elegida: {date_time}')
+
             # Si la fecha del evento es anterior a la actual salgo
             if date_time < date_time_now:
-                return []
+                # Si el formato de la fecha es
+                log.error(f'Error... Current time: {date_time_now} | Selected time: {date_time}')
+                return {}
 
-            event = self._generate_event('date', date_time, author, channel, content)
+            event = self._generate_event('date', date_time, author, channel, message, content)
             job_id = self._create_job(event)
 
             # Guardo el evento en la base de datos
@@ -185,6 +192,7 @@ class ReminderCore:
                 'author':     event['author'],
                 'author_id':  event['author_id'],
                 'channel':    event['channel'],
+                'message':       event['message'],
                 'content':    event['content'],
                 'created_at': date_time_now.strftime("%Y-%m-%d | %H:%M | %z"),
                 'job':        job_id,
@@ -193,12 +201,13 @@ class ReminderCore:
                 'type':       'date'
             }
 
+            log.info(f'DATOS: {data}')
             # Genero un registro local
             return self.db.create(self.collection, data)
         except:
             # Si el formato de la fecha es incorrecto
             log.error(f'Error... {sys.exc_info()[0]}')
-            return None
+            return {}
 
 
     async def load(self):
@@ -220,6 +229,7 @@ class ReminderCore:
                 event = {
                     'channel': doc['data']['channel'],
                     'content': doc['data']['content'],
+                    'message': doc['data']['message'],
                     'cron':    doc['data']['cron'],
                     'type':    'cron'
                 }
@@ -227,6 +237,7 @@ class ReminderCore:
                 event = {
                     'channel': doc['data']['channel'],
                     'content': doc['data']['content'],
+                    'message': doc['data']['message'],
                     'time':    datetime.fromisoformat(f"{doc['data']['time'].value[:-1]}+00:00"),
                     'type':    'date'
                 }
@@ -248,7 +259,7 @@ class ReminderCore:
         return events['data']
 
 
-    async def remove(self, id_, author):
+    async def remove(self, id_, author) -> dict:
         """Borro un evento programado"""
 
         return self._remove_by_id_and_author(id_, author)
