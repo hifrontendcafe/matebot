@@ -5,6 +5,7 @@
 import re
 import os
 import logging
+import requests
 
 import discord
 from discord.embeds import Embed
@@ -35,6 +36,8 @@ class Mentorship(Cog):
         secret = os.getenv("FAUNADB_SECRET_KEY")
         self.db = DB(secret)
         self.PREFIX = os.getenv("DISCORD_PREFIX")
+        self.AWS_URL = os.getenv("AWS_URL")
+        self.AWS_HEADERS = {'x-api-key': os.getenv("AWS_API_KEY")}
 
     def validateDiscordUser(self, user):
         regex = re.compile(r"\<\@(\!|.)\d+\>")
@@ -415,22 +418,23 @@ class Mentorship(Cog):
     @mentee.command()
     @has_any_role('admin-mentors', 'Mentors')
     async def add(self, ctx, user):
+        AWS_URL = self.AWS_URL
+        AWS_HEADERS = self.AWS_HEADERS
         '''
         Comando mentee add
         '''
+        async def rejected_message(ctx, member, userId):
+            adminMentorsRole = discord.utils.get(
+                ctx.guild.roles, name="admin-mentors")
+            message = f"""
+> :no_entry:  **Solicitud de mentoría rechazada**
+> ¡Hola! {member.mention} la mentoría no se llevara a cabo ya que anteriormente has sido penalizado por no cumplir el código de conducta. Si crees que fue un error, comunícate con {adminMentorsRole.mention}.
+> ⠀
+> _ID del usuario: {userId}_
+"""
+            await ctx.channel.send(message)
 
-        def mentorship_register(self, id, author_id, author, mentee_id, mentee):
-            now = datetime.now()
-            self.db.create('Mentorships', {
-                "id": id,
-                "timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),
-                "author_id": author_id,
-                "author": author,
-                "mentee_id": mentee_id,
-                "mentee": mentee,
-            })
-
-        async def success_message(self, ctx, member, userId):
+        async def success_message(ctx, member, userId):
             message = f"""
 > :white_check_mark:  **Solicitud de mentoría exitosa**
 > ¡Hola! La mentoría de {member.mention} ha sido registrada satisfactoriamente.
@@ -440,38 +444,37 @@ class Mentorship(Cog):
 """
             await ctx.channel.send(message)
 
+        async def error_message(ctx, userId):
+            adminMentorsRole = discord.utils.get(
+                ctx.guild.roles, name="admin-mentors")
+            message = f"""
+> :warning:  **Error**
+> ¡Hola! Ocurrió un problema al registrar al mentoría por favor, comunícate con {adminMentorsRole.mention}.
+> ⠀
+> _ID del usuario: {userId}_
+"""
+            await ctx.channel.send(message)
+
         try:
             await ctx.message.delete()
             userId = int(re.search(r'\d+', user).group())
             member = await ctx.guild.fetch_member(userId)
-            mentee = self.db.get_mentee_by_discord_id(userId)
-
-            if mentee['data']['warns_quantity'] > 0:
-                adminMentorsRole = discord.utils.get(
-                    ctx.guild.roles, name="admin-mentors")
-                # Send message
-                message = f"""
-> :no_entry:  **Solicitud de mentoría rechazada**
-> ¡Hola! {member.mention} la mentoría no se llevara a cabo ya que anteriormente has sido penalizado por no cumplir el código de conducta. Si crees que fue un error, comunícate con {adminMentorsRole.mention}.
-> ⠀
-> _ID del usuario: {userId}_
-"""
-                await ctx.channel.send(message)
+            request = requests.post(f'{AWS_URL}/matebot/mentorship', headers=AWS_HEADERS, json={
+                "mentor_id": str(ctx.message.author.id),
+                "mentor_username_discord": ctx.message.author.display_name,
+                "mentee_id": str(userId),
+                "mentee_username_discord": member.display_name})
+            response = request.json()
+            print(response)
+            if response['code'] == "-118":
+                await rejected_message(ctx, member, userId)
+            elif response['code'] == "100":
+                await success_message(ctx, member, userId)
             else:
-                mentorship_register(
-                    self, userId, ctx.message.author.id, ctx.message.author.display_name, userId, member.display_name)
-                # Send message
-                await success_message(self, ctx, member, userId)
-
+                await error_message(ctx, member, userId)
         except Exception as e:
-            if type(e) is faunadb.errors.NotFound:
-                # Send message
-                mentorship_register(
-                    self, userId, ctx.message.author.id, ctx.message.author.display_name, userId, member.display_name)
-                # Send message
-                await success_message(self, ctx, member, userId)
-            else:
-                print(e)
+            print('error', e)
+            await error_message(ctx, member, userId)
 
     @add.error
     async def add_error(self, ctx, error):
