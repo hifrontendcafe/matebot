@@ -1,6 +1,5 @@
 from typing import Union
 from discord import Colour, Embed
-from discord.ext import commands
 
 class EmbedGenerator:
     """ Embed base para generar el mensaje de ayuda. """
@@ -21,7 +20,7 @@ class EmbedGenerator:
 
     @property
     def colour(self):
-        return self._fields
+        return self._colour
 
     @colour.setter
     def colour(self, value):
