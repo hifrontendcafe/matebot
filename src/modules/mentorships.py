@@ -5,6 +5,7 @@
 import re
 import os
 import logging
+from urllib import response
 import requests
 
 import discord
@@ -139,103 +140,62 @@ class Mentorship(Cog):
     @mentee.command()
     @has_any_role('admin-mentors', 'Mentors')
     async def warn(self, ctx, user, *reason):
-        if self.validateDiscordUser(user):
-            userId = int(re.search(r'\d+', user).group())
-            member = await ctx.guild.fetch_member(userId)
-            menteeRole = discord.utils.get(ctx.guild.roles, name="Mentees")
-            await member.remove_roles(menteeRole)
+        '''
+        Comando mentee warn
+        '''
+        AWS_URL = self.AWS_URL
+        AWS_HEADERS = self.AWS_HEADERS
 
-            def db_add(self, id, warned_user, warns_quantity, history):
-                self.db.create('Mentorship_Warns', {
-                    "id": id,
-                    "warned_user": str(warned_user),
-                    "warns_quantity": warns_quantity,
-                    "history": history,
-                })
-            '''
-            Comando mentee warn
-            '''
-
-            reason = " ".join(reason)
+        async def success_message(ctx, member, userId):
             now = datetime.now()
-            history_content = {
-                "timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),
-                "reason": reason
-            }
+            message = f"""
+> :triangular_flag_on_post:  **{member.mention} ha sido penalizado/a**
+> ⠀
+> _**Motivo**: {"Ausencia a la mentoria" if not reason else reason}_
+> _**Fecha**: {now.strftime("%d/%m/%Y")}_
+> ⠀
+> _ID del usuario: {userId}_
+> ⠀
+> `{ctx.author}`
+"""
+            await ctx.channel.send(message)
 
+        async def error_message(ctx, userId):
+            adminMentorsRole = discord.utils.get(
+                ctx.guild.roles, name="admin-mentors")
+            message = f"""
+> :warning:  **Error**
+> ¡Hola! Ocurrió un problema al registrar la penalización, por favor comunícate con {adminMentorsRole.mention}.
+> ⠀
+> _ID del usuario: {userId}_
+"""
+            await ctx.channel.send(message)
+
+        if self.validateDiscordUser(user):
             try:
                 await ctx.message.delete()
+
                 userId = int(re.search(r'\d+', user).group())
                 member = await ctx.guild.fetch_member(userId)
-                mentee = self.db.get_mentee_by_discord_id(userId)
-                history = mentee['data']['history']
-
-                # if the field doesn't exist, I add it
-                if history is None:
-                    history = [history_content]
+                menteeRole = discord.utils.get(ctx.guild.roles, name="Mentees")
+                await member.remove_roles(menteeRole)
+                request = requests.post(f'{AWS_URL}/matebot/warning', headers=AWS_HEADERS, json={
+                    "mentee_id": str(userId),
+                    "mentee_username_discord": member.display_name,
+                    'warning_author_id': str(ctx.message.author.id),
+                    'warning_author_username_discord': ctx.message.author.display_name,
+                    'warn_cause': ' '.join(reason) if reason else 'Ausencia a la mentoría',
+                    'warn_type':  'COC_WARN' if reason else 'NO_ASSIST'
+                })
+                response = request.json()
+                print(response)
+                if response['code'] == "300":
+                    await success_message(ctx, member, userId)
                 else:
-                    history.append(history_content)
-
-                self.db.update_with_ref(
-                    mentee['ref'],
-                    {
-                        "warns_quantity": mentee['data']['warns_quantity'] + 1,
-                        "history": history,
-                    }
-                )
-
-                # Send warn message
-                message = f"""
-> :triangular_flag_on_post:  **{member.mention} ha sido penalizado/a**
-> Cantidad de penalizaciones: **{mentee['data']['warns_quantity'] + 1}**
-> ⠀
-> _**Motivo**: {"Ausencia a la mentoria" if not reason else reason}_
-> _**Fecha**: {now.strftime("%d/%m/%Y")}_
-> ⠀
-> _ID del usuario: {userId}_
-> ⠀
-> `{ctx.author}`
-"""
-                await ctx.channel.send(message)
-
-                # embed = Embed(title=f"{member.display_name} ha sido penalizado/a",
-                #               description=f"Cantidad de penalizaciones: {mentee['data']['warns_quantity'] + 1}", color=0xFF6B00)
-                # embed.add_field(name="ID del usuario",
-                #                 value=userId, inline=True)
-                # embed.set_footer(
-                #     text=ctx.author, icon_url=ctx.author.avatar_url)
-                # await ctx.send(embed=embed)
-
+                    await error_message(ctx, member, userId)
             except Exception as e:
-                if type(e) is faunadb.errors.NotFound:
-                    history = [history_content]
-                    db_add(self, str(member.id),
-                           member.display_name, 1, history)
-
-                    # Send warn message
-                    message = f"""
-> :triangular_flag_on_post:  **{member.mention} ha sido penalizado/a**
-> Cantidad de penalizaciones: **1**
-> ⠀
-> _**Motivo**: {"Ausencia a la mentoria" if not reason else reason}_
-> _**Fecha**: {now.strftime("%d/%m/%Y")}_
-> ⠀
-> _ID del usuario: {userId}_
-> ⠀
-> `{ctx.author}`
-"""
-
-                    await ctx.channel.send(message)
-
-                    # embed = discord.Embed(title=f"{member.display_name} ha sido penalizado/a",
-                    #                       description="Cantidad de penalizaciones: 1", color=0xFF6B00)
-                    # embed.add_field(name="ID del usuario",
-                    #                 value=userId, inline=True)
-                    # embed.set_footer(
-                    #     text=ctx.author, icon_url=ctx.author.avatar_url)
-                    # await ctx.send(embed=embed)
-                else:
-                    print(e)
+                print(e)
+                await error_message(ctx, member, userId)
         else:
             await ctx.channel.send(f"Usuario no válido, por favor etiquetar a un usuario de discord con '@'", delete_after=30)
 
@@ -398,11 +358,12 @@ class Mentorship(Cog):
     @mentee.command()
     @has_any_role('admin-mentors', 'Mentors')
     async def add(self, ctx, user):
-        AWS_URL = self.AWS_URL
-        AWS_HEADERS = self.AWS_HEADERS
         '''
         Comando mentee add
         '''
+        AWS_URL = self.AWS_URL
+        AWS_HEADERS = self.AWS_HEADERS
+
         async def rejected_message(ctx, member, userId):
             adminMentorsRole = discord.utils.get(
                 ctx.guild.roles, name="admin-mentors")
@@ -429,7 +390,7 @@ class Mentorship(Cog):
                 ctx.guild.roles, name="admin-mentors")
             message = f"""
 > :warning:  **Error**
-> ¡Hola! Ocurrió un problema al registrar al mentoría por favor, comunícate con {adminMentorsRole.mention}.
+> ¡Hola! Ocurrió un problema al registrar al mentoría, por favor comunícate con {adminMentorsRole.mention}.
 > ⠀
 > _ID del usuario: {userId}_
 """
