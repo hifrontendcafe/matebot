@@ -252,84 +252,64 @@ class Mentorship(Cog):
 
     @mentee.command()
     @has_any_role('Staff', 'admin-mentors')
-    async def warn_rm(self, ctx, user):
+    async def warn_rm(self, ctx, user, *forgive_cause):
         '''
         Comando mentee warn remove
         '''
+        AWS_URL = self.AWS_URL
+        AWS_HEADERS = self.AWS_HEADERS
+
+        async def success_message(ctx, member, userId):
+            message = f"""
+    > :point_right:  **Se ha removido la penalización a {member.mention}**
+    > ⠀
+    > _ID del usuario: {userId}_
+    > ⠀
+    > `{ctx.author}`
+    """
+            await ctx.channel.send(message)
+
+        async def no_warnings_message(ctx, member, userId):
+            message = f"""
+> :ballot_box_with_check:  **{member.mention} no tiene penalizaciones**
+> ⠀
+> _ID del usuario: {userId}_
+> ⠀
+> `{ctx.author}`
+"""
+            await ctx.channel.send(message)
+
+        async def error_message(ctx, userId):
+            adminMentorsRole = discord.utils.get(
+                ctx.guild.roles, name="admin-mentors")
+            message = f"""
+> :warning:  **Error**
+> ¡Hola! Ocurrió un problema al intentar remover la penalización por favor, comunícate con {adminMentorsRole.mention}.
+> ⠀
+> _ID del usuario: {userId}_
+"""
+            await ctx.channel.send(message)
 
         try:
             await ctx.message.delete()
             userId = int(re.search(r'\d+', user).group())
             member = await ctx.guild.fetch_member(userId)
-            mentee = self.db.get_mentee_by_discord_id(userId)
-            if mentee['data']['warns_quantity'] > 0:
-                self.db.update_with_ref(
-                    mentee['ref'],
-                    {
-                        "warns_quantity": mentee['data']['warns_quantity'] - 1,
-                    }
-                )
+            request = requests.patch(f'{AWS_URL}/warning/mentee/{str(userId)}', headers=AWS_HEADERS, json={
+                "forgive_cause": ' '.join(forgive_cause) if forgive_cause else 'Sin motivo',
+                "forgive_author_id": ctx.message.author.id,
+                "forgive_author_username_discord": ctx.message.author.display_name
+            })
+            response = request.json()
 
-                # Send warn message
-                message = f"""
-> :point_right:  **Se ha removido una penalización a {member.mention}**
-> Cantidad de penalizaciones: **{mentee['data']['warns_quantity'] - 1}**
-> ⠀
-> _ID del usuario: {userId}_
-> ⠀
-> `{ctx.author}`
-"""
-
-                await ctx.channel.send(message)
-
-                # embed = Embed(title=f"Se ha removido una penalización a {member.display_name}",
-                #               description=f"Cantidad de penalizaciones: {mentee['data']['warns_quantity']-1}", color=0x00ebbc)
-                # embed.add_field(name="ID del usuario",
-                #                 value=userId, inline=True)
-                # embed.set_footer(
-                #     text=ctx.author, icon_url=ctx.author.avatar_url)
-                # await ctx.send(embed=embed)
+            if response['code'] == "303":
+                await success_message(ctx, member, userId)
+            elif response['code'] == "301":
+                await no_warnings_message(ctx, member, userId)
             else:
-                message = f"""
-> :ballot_box_with_check:  **{member.mention} no tiene penalizaciones**
-> Cantidad de penalizaciones: **0**
-> ⠀
-> _ID del usuario: {userId}_
-> ⠀
-> `{ctx.author}`
-"""
-                await ctx.channel.send(message)
-
-                # embed = discord.Embed(title=f"{member.display_name} no tiene penalizaciones",
-                #                       description="Cantidad de penalizaciones: 0", color=0x00ebbc)
-                # embed.add_field(name="ID del usuario",
-                #                 value=userId, inline=True)
-                # embed.set_footer(
-                #     text=ctx.author, icon_url=ctx.author.avatar_url)
-                # await ctx.send(embed=embed)
-
+                await error_message(ctx, userId)
         except Exception as e:
-            if type(e) is faunadb.errors.NotFound:
-                # Send warn message
-                message = f"""
-> :ballot_box_with_check:  **{member.mention} no tiene penalizaciones**
-> Cantidad de penalizaciones: **0**
-> ⠀
-> _ID del usuario: {userId}_
-> ⠀
-> `{ctx.author}`
-"""
-                await ctx.channel.send(message)
-
-                # embed = discord.Embed(title=f"{member.display_name} no tiene penalizaciones",
-                #                       description="Cantidad de penalizaciones: 0", color=0x00ebbc)
-                # embed.add_field(name="ID del usuario",
-                #                 value=userId, inline=True)
-                # embed.set_footer(
-                #     text=ctx.author, icon_url=ctx.author.avatar_url)
-                # await ctx.send(embed=embed)
-            else:
-                print(e)
+            print(e)
+            await error_message(ctx, userId)
 
     @warn_rm.error
     async def mentee_error(self, ctx, error):
@@ -338,7 +318,7 @@ class Mentorship(Cog):
             await ctx.channel.send("No tienes el rol Staff/admin-mentors", delete_after=30)
         elif isinstance(error, MissingRequiredArgument):
             await ctx.message.delete()
-            await ctx.channel.send("Por favor, etiquetar al usuario al que desea quitar una penalización.", delete_after=30)
+            await ctx.channel.send("Por favor, etiquetar al usuario al que desea quitar una penalización y el motivo.", delete_after=30)
         else:
             raise error
 
@@ -465,7 +445,7 @@ class Mentorship(Cog):
                 "mentee_id": str(userId),
                 "mentee_username_discord": member.display_name})
             response = request.json()
-            print(response)
+
             if response['code'] == "-118":
                 await rejected_message(ctx, member, userId)
             elif response['code'] == "100":
