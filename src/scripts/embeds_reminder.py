@@ -182,10 +182,11 @@ async def type_reminder(ctx, bot):
     for emoji in emojis:
         await msg_bot.add_reaction(emoji=emoji)
     reaction, user = await bot.wait_for('reaction_add', check=check_reaction)
+    is_cron_weekly = emojis.index(reaction.emoji) == 1
     type = "date" if emojis.index(reaction.emoji) == 0 else "cron"
     await msg_bot.delete()
 
-    return type
+    return type, is_cron_weekly
 
 
 async def date_reminder(ctx, bot, process_date_time, colour):
@@ -217,7 +218,7 @@ Escribe el mensaje y aprieta <Enter>
         if date_time == 1: # Error.DATETIME
             embed = Embed(
                 title="🟥 Error: Formato inválido",
-                description="""Por favor, expecifique con mas detalles la fecha del evento.
+                description="""Por favor, expecifique con mas detalles la fecha del recordatorio.
 Ejemplo: `07/02/2022 21:19`""",
                 color=colour(colour_type='ERROR')
             )
@@ -238,8 +239,195 @@ Recuerde que la hora está en GMT-3 (Zona horaria de Argentina)""",
     except ValueError:
         embed = Embed(
             title="🟥 Error: Formato inválido",
-            description="""Por favor, expecifique con mas detalles la fecha del evento.
+            description="""Por favor, expecifique con mas detalles la fecha del recordatorio.
 Ejemplo: `07/02/2022 21:19`""",
+            color=colour(colour_type='ERROR')
+        )
+        await ctx.send(embed=embed, delete_after=60)
+        return None, None
+
+
+async def end_reminder(ctx, bot, process_date_time, colour):
+    """
+    Date of reminder's end
+    """
+    def check(msg):
+        if ctx.author == msg.author:
+            return msg
+        else:
+            return None
+
+    tz = zoneinfo.ZoneInfo('America/Buenos_Aires')
+    e = EmbedGenerator()
+    e.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
+    e.title = "[ADD] Agregar recordatorio"
+    e.description = ""
+    e.fields= [("¿Cuándo terminará el recordatorio?", f"""
+El formato a seguir es: dd/mm/yyyy
+Ejemplo: {datetime.now(tz).strftime('%d/%m/%Y')}
+Escribe el mensaje y aprieta <Enter>
+""")]
+    try:
+        embed = e.generate_embed()
+        msg_bot = await ctx.send(embed=embed)
+        end_date = await bot.wait_for('message', check=check)
+        date_time = process_date_time(date=end_date.content, time='00:00')
+        if date_time == 1: # Error.DATETIME
+            embed = Embed(
+                title="🟥 Error: Formato inválido",
+                description="""Por favor, expecifique con mas detalles la fecha de fin del recordatorio.
+Ejemplo: `07/02/2022`""",
+                color=colour(colour_type='ERROR')
+            )
+            await ctx.send(embed=embed, delete_after=60)
+            return None
+        elif date_time == 3: # Error.DATE_HAS_PASSED
+            embed = Embed(
+                title="🟥 Error: Fecha pasada",
+                description="""Por favor, defina una fecha posterior a la actual.
+Recuerde que la hora está en GMT-3 (Zona horaria de Argentina)""",
+                color=colour(colour_type='ERROR')
+            )
+            await ctx.send(embed=embed, delete_after=60)
+            return None
+        await msg_bot.delete()
+        await end_date.delete()
+        return end_date
+    except ValueError:
+        embed = Embed(
+            title="🟥 Error: Formato inválido",
+            description="""Por favor, expecifique con mas detalles la fecha de fin del recordatorio.
+Ejemplo: `07/02/2022`""",
+            color=colour(colour_type='ERROR')
+        )
+        await ctx.send(embed=embed, delete_after=60)
+        return None
+
+
+async def get_day(ctx, bot, colour):
+    """
+    Day of month of the reminder (1-31)
+    """
+    def check(msg):
+        if ctx.author == msg.author:
+            return msg
+        else:
+            return None
+
+    e = EmbedGenerator()
+    e.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
+    e.title = "[ADD] Agregar recordatorio"
+    e.description = ""
+    e.fields= [("¿Qué día del mes aparecerá el recordatorio?", f"""
+Ten en cuenta que si escribes `23`, el recordatorio aparecerá el 23 de cada mes.
+Otro punto a tener en cuenta: si escribes `31`, el recordatorio aparecerá solo el 31 de cada mes. Por lo tanto, no aparecería en Febrero!
+Escribe el mensaje y aprieta <Enter>
+""")]
+    try:
+        embed = e.generate_embed()
+        msg_bot = await ctx.send(embed=embed)
+        day_rem = await bot.wait_for('message', check=check)
+        day = int(day_rem.content)
+        
+        if day < 1 or day > 31:
+            embed = Embed(
+                title="🟥 Error: Día inválido",
+                description="Por favor, elige un día entre 1 y 31.",
+                color=colour(colour_type='ERROR')
+            )
+            await ctx.send(embed=embed, delete_after=60)
+            return None
+
+        await msg_bot.delete()
+        await day_rem.delete()
+        return day
+    except ValueError:
+        embed = Embed(
+            title="🟥 Error: Formato inválido",
+            description="""Por favor, ingrese un número entero entre 1 y 31.""",
+            color=colour(colour_type='ERROR')
+        )
+        await ctx.send(embed=embed, delete_after=60)
+        return None
+
+
+async def get_day_week(ctx, bot):
+    """
+    Day of week of the reminder (1-31)
+    """
+    def check_reaction(reaction, user):
+        return ctx.author == user
+
+    e = EmbedGenerator()
+    e.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
+    e.title = "[ADD] Agregar recordatorio"
+    e.description = ""
+    e.fields= [("¿Qué día de la semana aparecerá el recordatorio?", f"""
+Reacciona con una de los siguientes emojis para elegir el día de la semana del recordatorio:
+1️⃣: Lunes
+2️⃣: Martes
+3️⃣: Miércoles
+4️⃣: Jueves
+5️⃣: Viernes
+6️⃣: Sábado
+7️⃣: Domingo
+Escribe el mensaje y aprieta <Enter>
+""")]
+    embed = e.generate_embed()
+    msg_bot = await ctx.send(embed=embed)
+    emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣"]
+    for emoji in emojis:
+        await msg_bot.add_reaction(emoji=emoji)
+    reaction, user = await bot.wait_for('reaction_add', check=check_reaction)
+    day = emojis.index(reaction.emoji)
+
+    await msg_bot.delete()
+    return day
+
+
+async def get_time(ctx, bot, colour):
+    """
+    Time of the reminder (HH:MM)
+    """
+    def check(msg):
+        if ctx.author == msg.author:
+            return msg
+        else:
+            return None
+
+    e = EmbedGenerator()
+    e.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
+    e.title = "[ADD] Agregar recordatorio"
+    e.description = ""
+    e.fields= [("¿En qué horario aparecerá el recordatorio?", f"""
+Ejemplos: `12:00`, `23:29`, `14:40`
+Escribe el mensaje y aprieta <Enter>
+""")]
+    try:
+        embed = e.generate_embed()
+        msg_bot = await ctx.send(embed=embed)
+        time_rem = await bot.wait_for('message', check=check)
+        hour, minute = time_rem.content.split(":")
+        HH = int(hour)
+        MM = int(minute)
+        
+        if (HH < 0 or HH > 23) or (MM < 0 or MM > 59):
+            embed = Embed(
+                title="🟥 Error: Horario inválido",
+                description="Por favor, elige un horario. Ejemplos: `12:00`, `23:29`, `14:40`",
+                color=colour(colour_type='ERROR')
+            )
+            await ctx.send(embed=embed, delete_after=60)
+            return None, None
+
+        await msg_bot.delete()
+        await time_rem.delete()
+        return hour, minute
+    except ValueError:
+        embed = Embed(
+            title="🟥 Error: Formato inválido",
+            description="""Por favor, elige un horario. Ejemplos: `12:00`, `23:29`, `14:40`
+            Chequea haber escrito el separador de horas y minutos con dos puntos (:) y sin espacios.""",
             color=colour(colour_type='ERROR')
         )
         await ctx.send(embed=embed, delete_after=60)

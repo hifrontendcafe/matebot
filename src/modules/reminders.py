@@ -14,7 +14,7 @@ import zoneinfo
 from libs.reminder_core import ReminderCore
 from libs.database import Database as DB
 from libs.embed import EmbedGenerator
-from scripts.embeds_reminder import addressee_reminder, channel_reminder, create_reminder_embed, date_reminder, description_reminder, title_reminder, type_reminder
+from scripts.embeds_reminder import addressee_reminder, channel_reminder, create_reminder_embed, date_reminder, description_reminder, get_day, get_day_week, get_time, title_reminder, type_reminder
 
 
 class Error(Enum):
@@ -195,15 +195,56 @@ f"""
         self.add_reminder["channel"] = await channel_reminder(ctx, self.bot, self._process_channel, self.colour)
 
         # Paso 6: Recordatorio único o recurrente
-        self.add_reminder["type"] = await type_reminder(ctx, self.bot)
+        self.add_reminder["type"], is_cron_weekly = await type_reminder(ctx, self.bot)
 
-        if self.add_reminder["type"] == "date":
         # Paso 7-date: Día y hora del recordatorio
+        if self.add_reminder["type"] == "date":
             rem_date, rem_time = await date_reminder(ctx, self.bot, self._process_date_time, self.colour)
             self.add_reminder["date"] = rem_date
             self.add_reminder["time"] = rem_time
+            date_time = dateparser.parse(f'le {self.add_reminder["date"]} {self.add_reminder["time"]} -03:00')
+
+        # Paso 7-cron-a: Día de la semana y hora del recordatorio
+        if self.add_reminder["type"] == "cron" and is_cron_weekly:
+            # end_date = await end_reminder(ctx, self.bot, self._process_date_time, self.colour)
+            day_of_week = await get_day_week(ctx, self.bot)
+            hour, minute = await get_time(ctx, self.bot, self.colour)
+            self.add_reminder["cron"] = {
+                "day_of_week": day_of_week, # If semanal: monday, tuesday, wednesday, thursday, friday, saturday or sunday
+                "hour": hour, # hour (0-23)
+                "minute": minute, # minute (0-59)
+                # "end_date": dateparser.parse(f'le {end_date} {rem_time}'),
+                # "timezone": zoneinfo.ZoneInfo('America/Buenos_Aires')
+            }
+
+        if self.add_reminder["type"] == "cron" and (not is_cron_weekly):
+            # end_date = await end_reminder(ctx, self.bot, self._process_date_time, self.colour)
+            day = await get_day(ctx, self.bot, self.colour)
+            hour, minute = await get_time(ctx, self.bot, self.colour)
+            self.add_reminder["cron"] = {
+                "day": day, # If monthly, day of the month (1-31)
+                "hour": hour, # hour (0-23)
+                "minute": minute, # minute (0-59)
+                # "end_date": dateparser.parse(f'le {end_date} {rem_time}'),
+                # "timezone": zoneinfo.ZoneInfo('America/Buenos_Aires')
+            }
 
         # Paso final: Resumen
+        date_reminder_embed = ""
+        if self.add_reminder["type"] == "date":
+            date_reminder_embed = f"**Fecha y hora**: {self.add_reminder['date']} {self.add_reminder['time']}"
+        if self.add_reminder["type"] == "cron":
+            date_reminder_embed = f"**Hora**: {self.add_reminder['cron']['hour']}:{self.add_reminder['cron']['minute']}"
+        
+        reminder_type = ""
+        if self.add_reminder["type"] == "date":
+            reminder_type = "__Recordatorio único__"
+        if self.add_reminder["type"] == "cron":
+            if is_cron_weekly:
+                reminder_type = "__Recordatorio semanal__"
+            else:
+                reminder_type = "__Recordatorio mensual__"
+
         e = EmbedGenerator()
         e.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
         e.title = "[ADD] Agregar recordatorio"
@@ -214,10 +255,8 @@ siguiente manera:
 **{self.add_reminder["title"]}**
 {self.add_reminder["description"]}
 {self.add_reminder["channel"]}
-{self.add_reminder["date"]} {self.add_reminder["time"]}
-{'__Recordatorio único__' if self.add_reminder["type"] == "date" else ''}
-{'__Recordatorio semanal__' if self.add_reminder["type"] == "cron" else ''}
-{'__Recordatorio mensual__' if self.add_reminder["type"] == "cron" else ''}
+{date_reminder_embed}
+{reminder_type}
 """
         e.fields= [("Reacciones", """
 ✅ Se ve bien, crear evento!
@@ -233,9 +272,6 @@ siguiente manera:
             return await ctx.send("❌ Creación de recordatorio cancelado!")
         else:
             author = self.bot.get_user(self.add_reminder["author_id"])
-            date_time = dateparser.parse(f'le {self.add_reminder["date"]} {self.add_reminder["time"]} -03:00')
-            if date_time == None:
-                return
             channel_id = self._process_channel(self.add_reminder["channel"])
 
             e.title = f"[Recordatorio] {self.add_reminder['title']}"
@@ -244,9 +280,11 @@ siguiente manera:
             embed = e.generate_embed()
             content = e.content
 
-            print(content)
             doc = {}
             if self.add_reminder["type"] == "date":
+                date_time = dateparser.parse(f'le {self.add_reminder["date"]} {self.add_reminder["time"]} -03:00')
+                if date_time == None:
+                    return
                 doc = await self._reminder.add_date(
                     author=author,
                     channel=str(channel_id),
@@ -255,6 +293,17 @@ siguiente manera:
                     time=date_time
                 )
                 log.info(f'Doc Fauna: {doc}')
+
+            if self.add_reminder["type"] == "cron":
+                doc = await self._reminder.add_cron(
+                    author=author,
+                    channel=str(channel_id),
+                    content=content,
+                    message=text,
+                    cron=self.add_reminder["cron"]
+                )
+                log.info(f'Doc Fauna: {doc}')
+
             if doc != {}:
                 e.title = f"Recordatorio creado!"
                 e.description = "Guarda el ID para poder borrar el recordatorio en cualquier momento"
@@ -267,6 +316,7 @@ siguiente manera:
                 await author.send(embed=embed) # Send embed to author by DM
             except Exception:
                 pass
+
 
     @reminder.command(aliases=["ls"])
     async def list(self, ctx):
