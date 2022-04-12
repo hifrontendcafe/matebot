@@ -65,8 +65,7 @@ class ReminderCore:
     def _remove_by_id(self, id_: str):
         try:
             doc = self.db.delete(self.collection, id_)
-            for job in doc['data']['jobs']:
-                self.sched.remove_job(job)
+            self.sched.remove_job(doc['data']['job'])
             return doc
         except:
             return []
@@ -75,11 +74,10 @@ class ReminderCore:
     def _remove_by_id_and_author(self, id_: str, author: str):
         try:
             doc = self.db.delete_by_id_and_author(self.collection, self.indexes['by_id_and_author'], id_, author)
-            for job in doc['data']['jobs']:
-                self.sched.remove_job(job)
+            self.sched.remove_job(doc['data']['job'])
             return doc
         except:
-            return []
+            return None
 
 
     async def _remove_old_event(self):

@@ -14,7 +14,7 @@ import zoneinfo
 from libs.reminder_core import ReminderCore
 from libs.database import Database as DB
 from libs.embed import EmbedGenerator
-from scripts.embeds_reminder import addressee_reminder, channel_reminder, create_reminder_embed, date_reminder, description_reminder, get_day, get_day_week, get_time, title_reminder, type_reminder
+from scripts.embeds_reminder import *
 
 
 class Error(Enum):
@@ -22,6 +22,16 @@ class Error(Enum):
     TIMEZONE        = 2
     DATE_HAS_PASSED = 3
     CHANNEL         = 4
+
+DAYS = {
+    0: "Lunes",
+    1: "Martes",
+    2: "Miércoles",
+    3: "Jueves",
+    4: "Viernes",
+    5: "Sábado",
+    6: "Domingo"
+}
 
 log = logging.getLogger(__name__)
 
@@ -117,12 +127,20 @@ class Reminders(commands.Cog):
     def _generate_list(self, docs):
         fields = []
         for doc in docs:
-            title = f"📅 {doc['data']['content']['title']}"
-            channel = f"**Canal**: <#{doc['data']['channel']}>"
-            date, time, _ = doc['data']['str_time'].split(' | ')
-            date = '-'.join(date.split('-')[::-1])
-            date_time = f"**Fecha y Hora**: {date} {time}"
-            author = f"**Autor**: <@!{doc['data']['author_id']}>"
+            data = doc['data']
+            title = f"📅 {data['content']['title']}"
+            channel = f"**Canal**: <#{data['channel']}>"
+            if data['type'] == 'date':
+                date, time, _ = data['str_time'].split(' | ')
+                date = '-'.join(date.split('-')[::-1])
+                date_time = f"**Fecha y Hora**: {date} {time}"
+            else:
+                date_time = f"**Hora**: {data['cron']['hour']}:{data['cron']['minute']}"
+                if "day" in data['cron']:
+                    date_time += f" (mensual). Cada día {data['cron']['day']}"
+                else:
+                    date_time += f" (semanal). Cada {DAYS[data['cron']['day_of_week']]}"
+            author = f"**Autor**: <@!{data['author_id']}>"
             ref_id = f"**ID**: {doc['ref'].id()}"
 
             fields.append((
@@ -168,7 +186,9 @@ f"""
     async def add(self, ctx):
         """ Comando reminder add
 
-        Agrega un nuevo evento y pograma los recordatorios.
+        Agrega un nuevo evento y pograma los recordatorios. Estos pueden ser de tipo:
+        - Una fecha y hora exactos (único aviso)
+        - Cada semana/mes en un día exacto (periódicos)
         """
 
         log.info("Reminder add")
@@ -346,13 +366,22 @@ siguiente manera:
 
         log.info("Reminder remove")
         doc = await self._reminder.remove(id_, str(ctx.author))
+        
         if doc:
-            title = f"📆 {doc['data']['content']['title']}"
-            channel = f"**Canal**: <#{doc['data']['channel']}>"
-            date, time, _ = doc['data']['str_time'].split(' | ')
-            date = '-'.join(date.split('-')[::-1])
-            date_time = f"**Fecha y Hora**: {date} {time}"
-            author = f"**Autor**: <@!{doc['data']['author_id']}>"
+            data = doc['data']
+            title = f"📅 {data['content']['title']}"
+            channel = f"**Canal**: <#{data['channel']}>"
+            if data['type'] == 'date':
+                date, time, _ = data['str_time'].split(' | ')
+                date = '-'.join(date.split('-')[::-1])
+                date_time = f"**Fecha y Hora**: {date} {time}"
+            else:
+                date_time = f"**Hora**: {data['cron']['hour']}:{data['cron']['minute']}"
+                if "day" in data['cron']:
+                    date_time += f" (mensual). Cada día {data['cron']['day']}"
+                else:
+                    date_time += f" (semanal). Cada {DAYS[data['cron']['day_of_week']]}"
+            author = f"**Autor**: <@!{data['author_id']}>"
             ref_id = f"**ID**: {doc['ref'].id()}"
 
             field = [
