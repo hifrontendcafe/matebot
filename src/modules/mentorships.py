@@ -103,7 +103,8 @@ class Mentorship(Cog):
 
         log.info('Mentee Help')
 
-        h = EmbedGenerator(ctx)
+        h = EmbedGenerator()
+        h.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
         h.title = f"Mentee: comandos"
         h.description = f"Lista de comandos para {PREFIX}mentee"
         h.fields = [
@@ -194,15 +195,6 @@ class Mentorship(Cog):
 > `{ctx.author}`
 """
                 await ctx.channel.send(message)
-
-                # embed = Embed(title=f"{member.display_name} ha sido penalizado/a",
-                #               description=f"Cantidad de penalizaciones: {mentee['data']['warns_quantity'] + 1}", color=0xFF6B00)
-                # embed.add_field(name="ID del usuario",
-                #                 value=userId, inline=True)
-                # embed.set_footer(
-                #     text=ctx.author, icon_url=ctx.author.avatar_url)
-                # await ctx.send(embed=embed)
-
             except Exception as e:
                 if type(e) is faunadb.errors.NotFound:
                     history = [history_content]
@@ -221,16 +213,7 @@ class Mentorship(Cog):
 > ⠀
 > `{ctx.author}`
 """
-
                     await ctx.channel.send(message)
-
-                    # embed = discord.Embed(title=f"{member.display_name} ha sido penalizado/a",
-                    #                       description="Cantidad de penalizaciones: 1", color=0xFF6B00)
-                    # embed.add_field(name="ID del usuario",
-                    #                 value=userId, inline=True)
-                    # embed.set_footer(
-                    #     text=ctx.author, icon_url=ctx.author.avatar_url)
-                    # await ctx.send(embed=embed)
                 else:
                     print(e)
         else:
@@ -278,14 +261,6 @@ class Mentorship(Cog):
 """
 
                 await ctx.channel.send(message)
-
-                # embed = Embed(title=f"Se ha removido una penalización a {member.display_name}",
-                #               description=f"Cantidad de penalizaciones: {mentee['data']['warns_quantity']-1}", color=0x00ebbc)
-                # embed.add_field(name="ID del usuario",
-                #                 value=userId, inline=True)
-                # embed.set_footer(
-                #     text=ctx.author, icon_url=ctx.author.avatar_url)
-                # await ctx.send(embed=embed)
             else:
                 message = f"""
 > :ballot_box_with_check:  **{member.mention} no tiene penalizaciones**
@@ -296,14 +271,6 @@ class Mentorship(Cog):
 > `{ctx.author}`
 """
                 await ctx.channel.send(message)
-
-                # embed = discord.Embed(title=f"{member.display_name} no tiene penalizaciones",
-                #                       description="Cantidad de penalizaciones: 0", color=0x00ebbc)
-                # embed.add_field(name="ID del usuario",
-                #                 value=userId, inline=True)
-                # embed.set_footer(
-                #     text=ctx.author, icon_url=ctx.author.avatar_url)
-                # await ctx.send(embed=embed)
 
         except Exception as e:
             if type(e) is faunadb.errors.NotFound:
@@ -317,14 +284,6 @@ class Mentorship(Cog):
 > `{ctx.author}`
 """
                 await ctx.channel.send(message)
-
-                # embed = discord.Embed(title=f"{member.display_name} no tiene penalizaciones",
-                #                       description="Cantidad de penalizaciones: 0", color=0x00ebbc)
-                # embed.add_field(name="ID del usuario",
-                #                 value=userId, inline=True)
-                # embed.set_footer(
-                #     text=ctx.author, icon_url=ctx.author.avatar_url)
-                # await ctx.send(embed=embed)
             else:
                 print(e)
 
