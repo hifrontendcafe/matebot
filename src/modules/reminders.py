@@ -128,6 +128,9 @@ class Reminders(commands.Cog):
         fields = []
         for doc in docs:
             data = doc['data']
+            description = data['content']['description']
+            if len(description) > 150:
+                description = description[:150] + " ..."
             title = f"📅 {data['content']['title']}"
             channel = f"**Canal**: <#{data['channel']}>"
             if data['type'] == 'date':
@@ -135,17 +138,18 @@ class Reminders(commands.Cog):
                 date = '-'.join(date.split('-')[::-1])
                 date_time = f"**Fecha y Hora**: {date} {time}"
             else:
-                date_time = f"**Hora**: {data['cron']['hour']}:{data['cron']['minute']}"
                 if "day" in data['cron']:
-                    date_time += f" (mensual). Cada día {data['cron']['day']}"
+                    date_time = f"Cada día {data['cron']['day']} (mensual). "
                 else:
-                    date_time += f" (semanal). Cada {DAYS[data['cron']['day_of_week']]}"
+                    date_time = f"Cada {DAYS[data['cron']['day_of_week']]} (semanal). "
+                date_time += f"**Hora**: {data['cron']['hour']}:{data['cron']['minute']}"
             author = f"**Autor**: <@!{data['author_id']}>"
             ref_id = f"**ID**: {doc['ref'].id()}"
 
             fields.append((
                 title,
 f"""
+{description}
 {channel} | {date_time}
 {author} | {ref_id}
 """
@@ -294,7 +298,7 @@ siguiente manera:
             author = self.bot.get_user(self.add_reminder["author_id"])
             channel_id = self._process_channel(self.add_reminder["channel"])
 
-            e.title = f"[Recordatorio] {self.add_reminder['title']}"
+            e.title = f"{self.add_reminder['title']}"
             e.description = self.add_reminder['description']
             e.fields = [("Matetip <:fecmate:960390626954854441>", f"Con el comando `{self.PREFIX}reminder help` puedes ver todos los comandos para recordatorios")]
             embed = e.generate_embed()
@@ -376,11 +380,11 @@ siguiente manera:
                 date = '-'.join(date.split('-')[::-1])
                 date_time = f"**Fecha y Hora**: {date} {time}"
             else:
-                date_time = f"**Hora**: {data['cron']['hour']}:{data['cron']['minute']}"
                 if "day" in data['cron']:
-                    date_time += f" (mensual). Cada día {data['cron']['day']}"
+                    date_time = f"Cada día {data['cron']['day']} (mensual). "
                 else:
-                    date_time += f" (semanal). Cada {DAYS[data['cron']['day_of_week']]}"
+                    date_time = f"Cada {DAYS[data['cron']['day_of_week']]} (semanal). "
+                date_time += f"**Hora**: {data['cron']['hour']}:{data['cron']['minute']}"
             author = f"**Autor**: <@!{data['author_id']}>"
             ref_id = f"**ID**: {doc['ref'].id()}"
 
