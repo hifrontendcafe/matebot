@@ -107,7 +107,8 @@ class Mentorship(Cog):
 
         log.info('Mentee Help')
 
-        h = EmbedGenerator(ctx)
+        h = EmbedGenerator()
+        h.author = (f"{ctx.me.name}", f"{ctx.me.avatar_url}")
         h.title = f"Mentee: comandos"
         h.description = f"Lista de comandos para {PREFIX}mentee"
         h.fields = [
