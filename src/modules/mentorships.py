@@ -2,6 +2,7 @@
 # This module is for adding/removing the Mentee role for FrontendCafé's mentorings
 
 # ///---- Imports ----///
+import json
 import re
 import os
 import logging
@@ -11,7 +12,7 @@ import requests
 import discord
 from discord.embeds import Embed
 from discord.ext.commands import Cog, group, MissingRequiredArgument
-from discord.ext.commands.core import has_any_role
+from discord.ext.commands.core import has_any_role, has_role
 from discord.ext.commands.errors import MissingAnyRole
 import faunadb
 from datetime import datetime
@@ -426,5 +427,63 @@ class Mentorship(Cog):
         elif isinstance(error, MissingRequiredArgument):
             await ctx.message.delete()
             await ctx.channel.send("Por favor, etiquetar el usuario al que desea registrar para una mentoría.", delete_after=30)
+        else:
+            raise error
+
+    @mentee.command()
+    @has_role('Admins')
+    async def migrate_warnings(self, ctx):
+        try:
+            with open("./warnings.json") as file:
+                warningData = json.load(file)
+                for x in warningData:
+                    print(x['data']['id'])
+                    request = requests.post(f'{self.AWS_URL}/matebot/warning', headers=self.AWS_HEADERS, json={
+                        "warning_date": x['ts'],
+                        "mentee_id": x['data']['id'],
+                        "mentee_username_discord": x['data']['warned_user'],
+                        'warning_author_id': '811059299160817665',
+                        'warning_author_username_discord': 'Matebot 🧉#4564',
+                        'warn_cause': 'Ausencia a la mentoría',
+                        'warn_type': 'NO_ASSIST'
+                    })
+                    response = request.json()
+                    print(response)
+                return print('OK')
+        except Exception as e:
+            print(e)
+
+    @migrate_warnings.error
+    async def migrate_warnings_error(self, ctx, error):
+        if isinstance(error, MissingAnyRole):
+            await ctx.message.delete()
+            await ctx.channel.send("Solo Admins puede ejecutar este comando", delete_after=30)
+        else:
+            raise error
+
+    @mentee.command()
+    @has_role('Admins')
+    async def migrate_mentorships(self, ctx):
+        try:
+            with open("./mentorships.json") as file:
+                mentorshipData = json.load(file)
+                for x in mentorshipData:
+                    request = requests.post(f'{self.AWS_URL}/matebot/mentorship', headers=self.AWS_HEADERS, json={
+                        "mentorship_date": x['ts'],
+                        "mentor_id": x['data']['author_id'],
+                        "mentor_username_discord": x['data']['author'],
+                        "mentee_id": x['data']['mentee_id'],
+                        "mentee_username_discord": x['data']['mentee']})
+                    response = request.json()
+                    print(response)
+                return print('FINISHED')
+        except Exception as e:
+            print(e)
+
+    @migrate_warnings.error
+    async def migrate_warnings_error(self, ctx, error):
+        if isinstance(error, MissingAnyRole):
+            await ctx.message.delete()
+            await ctx.channel.send("Solo Admins puede ejecutar este comando", delete_after=30)
         else:
             raise error
