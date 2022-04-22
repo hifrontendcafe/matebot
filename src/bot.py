@@ -38,21 +38,21 @@ if __name__ == "__main__":
 
     bot = commands.Bot(
         command_prefix=commands.when_mentioned_or(PREFIX),
-        description="Relatively simple music bot example",
+        description="Matebot",
         help_command=None,
         intents=intents
     )
 
     # Lista de módulos activa
-    bot.add_cog(modules.Help(bot))
-    bot.add_cog(modules.Welcome(bot))
-    bot.add_cog(modules.FAQ(bot))
-    bot.add_cog(modules.Polls(bot))
-    bot.add_cog(modules.Search(bot))
-    bot.add_cog(modules.NewMembers(bot))
-    bot.add_cog(modules.Info(bot))
+    # bot.add_cog(modules.Help(bot))
+    # bot.add_cog(modules.Welcome(bot))
+    # bot.add_cog(modules.FAQ(bot))
+    # bot.add_cog(modules.Polls(bot))
+    # bot.add_cog(modules.Search(bot))
+    # bot.add_cog(modules.NewMembers(bot))
+    # bot.add_cog(modules.Info(bot))
     bot.add_cog(modules.Mentorship(bot))
-    bot.add_cog(modules.Reminders(bot))
+    # bot.add_cog(modules.Reminders(bot))
     # bot.add_cog(modules.Events(bot))
     # bot.add_cog(modules.Scheduler(bot))
     # bot.add_cog(modules.MentionNewMembers(bot))
