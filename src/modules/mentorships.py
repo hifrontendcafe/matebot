@@ -13,7 +13,7 @@ import discord
 from discord.embeds import Embed
 from discord.ext.commands import Cog, group, MissingRequiredArgument
 from discord.ext.commands.core import has_any_role, has_role
-from discord.ext.commands.errors import MissingAnyRole
+from discord.ext.commands.errors import MissingAnyRole, MissingRole
 import faunadb
 from datetime import datetime
 # Database
@@ -432,32 +432,39 @@ class Mentorship(Cog):
 
     @mentee.command()
     @has_role('Admins')
-    async def migrate_warnings(self, ctx):
+    async def migrate_warnings(self, ctx, warn_quantity=0):
         try:
-            with open("./warnings.json") as file:
+            counter = 0
+            with open("./all_warned_mentees.json") as file:
                 warningData = json.load(file)
                 for x in warningData:
-                    print(x['data']['id'])
-                    request = requests.post(f'{self.AWS_URL}/matebot/warning', headers=self.AWS_HEADERS, json={
-                        "warning_date": x['ts'],
-                        "mentee_id": x['data']['id'],
-                        "mentee_username_discord": x['data']['warned_user'],
-                        'warning_author_id': '811059299160817665',
-                        'warning_author_username_discord': 'Matebot 🧉#4564',
-                        'warn_cause': 'Ausencia a la mentoría',
-                        'warn_type': 'NO_ASSIST'
-                    })
-                    response = request.json()
-                    print(response)
-                return print('OK')
+                    if x['data']['warns_quantity'] > warn_quantity:
+                        request = requests.post(f'{self.AWS_URL}/matebot/warning', headers=self.AWS_HEADERS, json={
+                            "warning_date": str(x['ts']),
+                            "mentee_id": x['data']['id'],
+                            "mentee_username_discord": x['data']['warned_user'],
+                            'warning_author_id': '811059299160817665',
+                            'warning_author_username_discord': 'Matebot 🧉#4564',
+                            'warn_cause': 'Ausencia a la mentoría',
+                            'warn_type': 'NO_ASSIST'
+                        })
+                        response = request.json()
+                        print(response)
+                        counter += 1
+                await ctx.channel.send(f"Se migraron {counter} warnings")
+                print('WARNINGS MIGRATED')
         except Exception as e:
+            await ctx.channel.send(f"Ocurrió un error: {e}")
             print(e)
 
     @migrate_warnings.error
     async def migrate_warnings_error(self, ctx, error):
-        if isinstance(error, MissingAnyRole):
+        if isinstance(error, MissingRole):
             await ctx.message.delete()
             await ctx.channel.send("Solo Admins puede ejecutar este comando", delete_after=30)
+        elif isinstance(error, MissingRequiredArgument):
+            await ctx.message.delete()
+            await ctx.channel.send("Ingresar la cantidad de warnings inicial. Ej: Si se ingresa 2, solo se van a migrar los datos de los usuarios con más de 2 warnings ( >2 ).", delete_after=30)
         else:
             raise error
 
@@ -465,24 +472,56 @@ class Mentorship(Cog):
     @has_role('Admins')
     async def migrate_mentorships(self, ctx):
         try:
+            counter = 0
             with open("./mentorships.json") as file:
                 mentorshipData = json.load(file)
                 for x in mentorshipData:
                     request = requests.post(f'{self.AWS_URL}/matebot/mentorship', headers=self.AWS_HEADERS, json={
-                        "mentorship_date": x['ts'],
-                        "mentor_id": x['data']['author_id'],
+                        "mentorship_date": str(x['ts']),
+                        "mentor_id": str(x['data']['author_id']),
                         "mentor_username_discord": x['data']['author'],
-                        "mentee_id": x['data']['mentee_id'],
+                        "mentee_id": str(x['data']['mentee_id']),
                         "mentee_username_discord": x['data']['mentee']})
                     response = request.json()
+                    counter += 1
                     print(response)
-                return print('FINISHED')
+                print('FINISHED')
+                await ctx.channel.send(f"Se migraron {counter} mentorías")
         except Exception as e:
+            await ctx.channel.send(f"Ocurrió un error: {e}")
             print(e)
 
     @migrate_warnings.error
     async def migrate_warnings_error(self, ctx, error):
-        if isinstance(error, MissingAnyRole):
+        if isinstance(error, MissingRole):
+            await ctx.message.delete()
+            await ctx.channel.send("Solo Admins puede ejecutar este comando", delete_after=30)
+        else:
+            raise error
+
+    @mentee.command()
+    @has_role('Admins')
+    async def export_collection(self, ctx, collection):
+        '''
+        Comando mentee export_collection
+        '''
+        try:
+            await ctx.message.delete()
+            collection_data = self.db.get_all(collection)
+            # Write file
+            with open(f"{collection}.json", "w") as file:
+                file.write(
+                    json.dumps(collection_data['data'], default=lambda o: o.__dict__,
+                               sort_keys=True, indent=4))
+            # Send file
+            with open(f"{collection}.json", "rb") as file:
+                await ctx.send("Lista:", file=discord.File(file, f"{collection}.json"))
+        except Exception as e:
+            print(e)
+
+    @export_collection.error
+    async def mentee_error(self, ctx, error):
+        if isinstance(error, MissingRole):
             await ctx.message.delete()
             await ctx.channel.send("Solo Admins puede ejecutar este comando", delete_after=30)
         else:
