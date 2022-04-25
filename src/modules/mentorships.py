@@ -194,10 +194,10 @@ class Mentorship(Cog):
                 if response['code'] == "300":
                     await success_message(ctx, member, userId)
                 else:
-                    await error_message(ctx, member, userId)
+                    await error_message(ctx, userId)
             except Exception as e:
                 print(e)
-                await error_message(ctx, member, userId)
+                await error_message(ctx, userId)
         else:
             await ctx.channel.send(f"Usuario no válido, por favor etiquetar a un usuario de discord con '@'", delete_after=30)
 
@@ -417,7 +417,7 @@ class Mentorship(Cog):
                 await error_message(ctx, member, userId)
         except Exception as e:
             print('error', e)
-            await error_message(ctx, member, userId)
+            await error_message(ctx, userId)
 
     @add.error
     async def add_error(self, ctx, error):
