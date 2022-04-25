@@ -414,7 +414,7 @@ class Mentorship(Cog):
             elif response['code'] == "100":
                 await success_message(ctx, member, userId)
             else:
-                await error_message(ctx, member, userId)
+                await error_message(ctx, userId)
         except Exception as e:
             print('error', e)
             await error_message(ctx, userId)
