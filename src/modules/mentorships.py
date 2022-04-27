@@ -124,7 +124,6 @@ class Mentorship(Cog):
              f'Dar warning a un usuario con motivo personalizado. Ejemplo:\n`{PREFIX}mentee warn @usuario Llegada tarde y falta de respeto`'),
             (f"{PREFIX}mentee warn_rm @usuario",
              "Remover 1 warning al usuario."),
-            (f"{PREFIX}mentee warn_ls", "Exportar lista de warnings.")
         ]
 
         embed = h.generate_embed()
@@ -153,7 +152,7 @@ class Mentorship(Cog):
             message = f"""
 > :triangular_flag_on_post:  **{member.mention} ha sido penalizado/a**
 > ⠀
-> _**Motivo**: {"Ausencia a la mentoria" if not reason else reason}_
+> _**Motivo**: {"Ausencia a la mentoria" if not reason else ' '.join(reason)}_
 > _**Fecha**: {now.strftime("%d/%m/%Y")}_
 > ⠀
 > _ID del usuario: {userId}_
@@ -281,35 +280,6 @@ class Mentorship(Cog):
         elif isinstance(error, MissingRequiredArgument):
             await ctx.message.delete()
             await ctx.channel.send("Por favor, etiquetar al usuario al que desea quitar una penalización y el motivo.", delete_after=30)
-        else:
-            raise error
-
-    @mentee.command()
-    @has_any_role('Staff', 'admin-mentors')
-    async def warn_ls(self, ctx):
-        '''
-        Comando mentee warn list
-        '''
-        try:
-            await ctx.message.delete()
-            warned_mentees = self.db.get_all('all_warned_mentees')
-            # Write file
-            with open("Warnings.txt", "w") as file:
-                for x in range(len(warned_mentees['data'])):
-                    menteeData = warned_mentees['data'][x]
-                    file.write(
-                        f"ID: {menteeData['data']['id']}, Warned mentee: {menteeData['data']['warned_user']}, Warns quantity: {menteeData['data']['warns_quantity']}\n")
-            # Send file
-            with open("Warnings.txt", "rb") as file:
-                await ctx.send("Lista:", file=discord.File(file, "Warnings.txt"))
-        except Exception as e:
-            print(e)
-
-    @warn_ls.error
-    async def mentee_error(self, ctx, error):
-        if isinstance(error, MissingAnyRole):
-            await ctx.message.delete()
-            await ctx.channel.send("No tienes el rol Staff/admin-mentors", delete_after=30)
         else:
             raise error
 
