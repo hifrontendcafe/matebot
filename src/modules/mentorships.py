@@ -410,7 +410,7 @@ class Mentorship(Cog):
                 for x in warningData:
                     if x['data']['warns_quantity'] > warn_quantity:
                         request = requests.post(f'{self.AWS_URL}/matebot/warning', headers=self.AWS_HEADERS, json={
-                            "warning_date": str(x['ts']),
+                            "warning_date": str(x['ts'])[0:-3],
                             "mentee_id": x['data']['id'],
                             "mentee_username_discord": x['data']['warned_user'],
                             'warning_author_id': '811059299160817665',
@@ -447,7 +447,7 @@ class Mentorship(Cog):
                 mentorshipData = json.load(file)
                 for x in mentorshipData:
                     request = requests.post(f'{self.AWS_URL}/matebot/mentorship', headers=self.AWS_HEADERS, json={
-                        "mentorship_date": str(x['ts']),
+                        "mentorship_date": str(x['ts'])[0:-3],
                         "mentor_id": str(x['data']['author_id']),
                         "mentor_username_discord": x['data']['author'],
                         "mentee_id": str(x['data']['mentee_id']),
