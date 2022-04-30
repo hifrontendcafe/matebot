@@ -351,10 +351,17 @@ siguiente manera:
 
         log.info("Reminder list")
         docs = await self._reminder.list()
-        # Recibo la lista de ventos
+        # Recibo la lista de ventos por DM (si está bloqueado, lo mando al canal)
         if docs:
             embed = self._generate_list(docs)
-            await ctx.send(embed=embed, delete_after=60)
+            message = f"Hola {ctx.author.mention}! Aquí están todos los recordatorios que tienes programados:"
+            try:
+                await ctx.message.author.send(message)
+                await ctx.message.author.send(embed=embed)
+            except:
+                await ctx.send(message)
+                await ctx.send(embed=embed, delete_after=60)
+                
         else:
             embed = Embed(title="🟨 Lista Vacía", color=self.colour(colour_type='WARNING'))
             await ctx.send(embed=embed, delete_after=60)
