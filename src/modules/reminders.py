@@ -81,7 +81,8 @@ class Reminders(commands.Cog):
         self._reminder.indexes = {
             'by_id_and_author': 'event_by_id_and_author',
             'by_time': 'all_events_by_time',
-            'all': 'all_events'
+            'by_author': 'events_by_author',
+            'all': 'all_events',
         }
         # Defino la función que se utiliza para ejecutar los eventos
         self._reminder.action = self.action
@@ -350,7 +351,8 @@ siguiente manera:
         """
 
         log.info("Reminder list")
-        docs = await self._reminder.list()
+        author = str(self.bot.get_user(ctx.message.author.id))
+        docs = await self._reminder.list(author=author)
         # Recibo la lista de ventos por DM (si está bloqueado, lo mando al canal)
         if docs:
             embed = self._generate_list(docs)
@@ -359,7 +361,7 @@ siguiente manera:
                 await ctx.message.author.send(message)
                 await ctx.message.author.send(embed=embed)
             except:
-                await ctx.send(message)
+                await ctx.send(message, delete_after=60)
                 await ctx.send(embed=embed, delete_after=60)
                 
         else:
