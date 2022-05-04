@@ -99,7 +99,7 @@ class NewMembers(commands.Cog):
             list_users = []
             self.update_list(list_users, users, time_final, new_delta)
             await cafe.send(
-                f'''{fec_star} Welcome {" ".join(new_users)}!
+                f'''{fec_star} Welcome {" ".join(set(new_users))}!
 Pueden presentarse en este canal, <#{self.channel_cafe}> y ver el manual en <#{self.channel_manual}> {impostor}''')
             new_users = []
         else:
