@@ -55,7 +55,6 @@ if __name__ == "__main__":
     bot.add_cog(modules.Reminders(bot))
     # bot.add_cog(modules.Events(bot))
     # bot.add_cog(modules.Scheduler(bot))
-    # bot.add_cog(modules.MentionNewMembers(bot))
 
     log.info("Bot started ...")
     bot.run(TOKEN)
