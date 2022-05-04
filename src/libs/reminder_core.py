@@ -250,10 +250,10 @@ class ReminderCore:
         return self.db.update_all_jobs(self.collection, new_docs)
 
 
-    async def list(self):
+    async def list(self, author: str):
         """Lista todos los eventos programados"""
 
-        events = self.db.get_all(self.indexes['all'])
+        events = self.db.get_by_author(index=self.indexes['by_author'], author=author)
         return events['data']
 
 
