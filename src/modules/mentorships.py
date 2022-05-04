@@ -46,10 +46,15 @@ class Mentorship(Cog):
         valid = re.fullmatch(regex, user)
         return valid
 
+    admin_mentor_role_id = 875764700418297868
+    mentors_role_id = 645409801844555787
+    staff_role_id = 936626779798507601
+    admins_role_id = 645411178398351363
+
     # >mentee
     #! Comando mentee
     @group(invoke_without_command=True)
-    @has_any_role('admin-mentors', 'Mentors')
+    @has_any_role(admin_mentor_role_id, mentors_role_id)
     async def mentee(self, ctx, user, time=None, channel=None):
         '''
         Comando mentee
@@ -99,7 +104,7 @@ class Mentorship(Cog):
             raise error
 
     @mentee.command()
-    @has_any_role('Mentors', 'admin-mentors')
+    @has_any_role(admin_mentor_role_id, mentors_role_id)
     async def help(self, ctx):
         """Imprimo embed con los comandos de `mentee`"""
         PREFIX = self.PREFIX
@@ -134,12 +139,12 @@ class Mentorship(Cog):
     async def mentee_error(self, ctx, error):
         if isinstance(error, MissingAnyRole):
             await ctx.message.delete()
-            await ctx.channel.send("No tienes el rol Mentors/admin-mentors", delete_after=30)
+            await ctx.channel.send("No tienes el rol Mentors/Admin-Mentors", delete_after=30)
         else:
             raise error
 
     @mentee.command()
-    @has_any_role('admin-mentors', 'Mentors')
+    @has_any_role(admin_mentor_role_id, mentors_role_id)
     async def warn(self, ctx, user, *reason):
         '''
         Comando mentee warn
@@ -163,7 +168,7 @@ class Mentorship(Cog):
 
         async def error_message(ctx, userId):
             adminMentorsRole = discord.utils.get(
-                ctx.guild.roles, name="admin-mentors")
+                ctx.guild.roles, id=self.admin_mentor_role_id)
             message = f"""
 > :warning:  **Error**
 > ¡Hola! Ocurrió un problema al registrar la penalización, por favor comunícate con {adminMentorsRole.mention}.
@@ -204,7 +209,7 @@ class Mentorship(Cog):
     async def mentee_error(self, ctx, error):
         if isinstance(error, MissingAnyRole):
             await ctx.message.delete()
-            await ctx.channel.send("No tienes el rol Mentors/admin-mentors", delete_after=30)
+            await ctx.channel.send("No tienes el rol Mentors/Admin-Mentors", delete_after=30)
         elif isinstance(error, MissingRequiredArgument):
             await ctx.message.delete()
             await ctx.channel.send("Por favor, etiquetar al usuario al que desea dar una advertencia.", delete_after=30)
@@ -212,7 +217,7 @@ class Mentorship(Cog):
             raise error
 
     @mentee.command()
-    @has_any_role('Staff', 'admin-mentors')
+    @has_any_role(staff_role_id, admin_mentor_role_id)
     async def warn_rm(self, ctx, user, *forgive_cause):
         '''
         Comando mentee warn remove
@@ -242,7 +247,7 @@ class Mentorship(Cog):
 
         async def error_message(ctx, userId):
             adminMentorsRole = discord.utils.get(
-                ctx.guild.roles, name="admin-mentors")
+                ctx.guild.roles, id=self.admin_mentor_role_id)
             message = f"""
 > :warning:  **Error**
 > ¡Hola! Ocurrió un problema al intentar remover la penalización por favor, comunícate con {adminMentorsRole.mention}.
@@ -276,7 +281,7 @@ class Mentorship(Cog):
     async def mentee_error(self, ctx, error):
         if isinstance(error, MissingAnyRole):
             await ctx.message.delete()
-            await ctx.channel.send("No tienes el rol Staff/admin-mentors", delete_after=30)
+            await ctx.channel.send("No tienes el rol Staff/Admin-Mentors", delete_after=30)
         elif isinstance(error, MissingRequiredArgument):
             await ctx.message.delete()
             await ctx.channel.send("Por favor, etiquetar al usuario al que desea quitar una penalización y el motivo.", delete_after=30)
@@ -284,7 +289,7 @@ class Mentorship(Cog):
             raise error
 
     @mentee.command()
-    @has_any_role('admin-mentors', 'Mentors')
+    @has_any_role(admin_mentor_role_id, mentors_role_id)
     async def check(self, ctx, user):
         '''
         Comando mentee check
@@ -320,7 +325,7 @@ class Mentorship(Cog):
     async def mentee_error(self, ctx, error):
         if isinstance(error, MissingAnyRole):
             await ctx.message.delete()
-            await ctx.channel.send("No tienes el rol Mentors/admin-mentors", delete_after=30)
+            await ctx.channel.send("No tienes el rol Mentors/Admin-Mentors", delete_after=30)
         elif isinstance(error, MissingRequiredArgument):
             await ctx.message.delete()
             await ctx.channel.send("Por favor, etiquetar el usuario que desea consultar.", delete_after=30)
@@ -328,7 +333,7 @@ class Mentorship(Cog):
             raise error
 
     @mentee.command()
-    @has_any_role('admin-mentors', 'Mentors')
+    @has_any_role(admin_mentor_role_id, mentors_role_id)
     async def add(self, ctx, user):
         '''
         Comando mentee add
@@ -338,7 +343,7 @@ class Mentorship(Cog):
 
         async def rejected_message(ctx, member, userId):
             adminMentorsRole = discord.utils.get(
-                ctx.guild.roles, name="admin-mentors")
+                ctx.guild.roles, id=self.admin_mentor_role_id)
             message = f"""
 > :no_entry:  **Solicitud de mentoría rechazada**
 > ¡Hola! {member.mention} la mentoría no se llevara a cabo ya que anteriormente has sido penalizado por no cumplir el código de conducta. Si crees que fue un error, comunícate con {adminMentorsRole.mention}.
@@ -359,7 +364,7 @@ class Mentorship(Cog):
 
         async def error_message(ctx, userId):
             adminMentorsRole = discord.utils.get(
-                ctx.guild.roles, name="admin-mentors")
+                ctx.guild.roles, id=self.admin_mentor_role_id)
             message = f"""
 > :warning:  **Error**
 > ¡Hola! Ocurrió un problema al registrar al mentoría, por favor comunícate con {adminMentorsRole.mention}.
@@ -393,7 +398,7 @@ class Mentorship(Cog):
     async def add_error(self, ctx, error):
         if isinstance(error, MissingAnyRole):
             await ctx.message.delete()
-            await ctx.channel.send("No tienes el rol Mentors/admin-mentors", delete_after=30)
+            await ctx.channel.send("No tienes el rol Mentors/Admin-Mentors", delete_after=30)
         elif isinstance(error, MissingRequiredArgument):
             await ctx.message.delete()
             await ctx.channel.send("Por favor, etiquetar el usuario al que desea registrar para una mentoría.", delete_after=30)
@@ -401,7 +406,7 @@ class Mentorship(Cog):
             raise error
 
     @mentee.command()
-    @has_role('Admins')
+    @has_role(admins_role_id)
     async def migrate_warnings(self, ctx, warn_quantity=0):
         try:
             counter = 0
@@ -439,7 +444,7 @@ class Mentorship(Cog):
             raise error
 
     @mentee.command()
-    @has_role('Admins')
+    @has_role(admins_role_id)
     async def migrate_mentorships(self, ctx):
         try:
             counter = 0
@@ -470,7 +475,7 @@ class Mentorship(Cog):
             raise error
 
     @mentee.command()
-    @has_role('Admins')
+    @has_role(admins_role_id)
     async def export_collection(self, ctx, collection):
         '''
         Comando mentee export_collection
