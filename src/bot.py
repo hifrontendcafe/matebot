@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     bot = commands.Bot(
         command_prefix=commands.when_mentioned_or(PREFIX),
-        description="Relatively simple music bot example",
+        description="Matebot",
         help_command=None,
         intents=intents
     )

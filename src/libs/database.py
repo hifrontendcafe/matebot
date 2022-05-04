@@ -100,7 +100,7 @@ class Database:
         return self.client.query(
             q.map_(
                 lambda ref: q.get(ref),
-                q.paginate(q.match(q.index(index)))
+                q.paginate(q.match(q.index(index)), size=500)
             )
         )
 
