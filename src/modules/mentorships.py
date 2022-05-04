@@ -121,8 +121,8 @@ class Mentorship(Cog):
             (f"{PREFIX}mentee @usuario", "Agregar/quitar rol de Mentee."),
             (f"{PREFIX}mentee add @usuario",
              "Registra una mentoría y a la vez verifica si ese usuario tiene warnings."),
-            (f"{PREFIX}mentee check @usuario",
-             "Verifica si el usuario tiene warnings."),
+            # (f"{PREFIX}mentee check @usuario",
+            #  "Verifica si el usuario tiene warnings."),
             (f"{PREFIX}mentee warn @usuario",
              'Dar warning a un usuario con motivo "Ausencia a la mentoría"'),
             (f"{PREFIX}mentee warn @usuario <motivo>",
@@ -288,49 +288,49 @@ class Mentorship(Cog):
         else:
             raise error
 
-    @mentee.command()
-    @has_any_role(admin_mentor_role_id, mentors_role_id)
-    async def check(self, ctx, user):
-        '''
-        Comando mentee check
-        '''
-        try:
-            await ctx.message.delete()
-            userId = int(re.search(r'\d+', user).group())
-            member = await ctx.guild.fetch_member(userId)
-            mentee = self.db.get_mentee_by_discord_id(userId)
-            # Send message
-            embed = Embed(title=f"Información de {member.display_name}",
-                          description=f"Cantidad de penalizaciones: {mentee['data']['warns_quantity']}", color=0xBD00FF)
-            embed.add_field(name="ID del usuario",
-                            value=userId, inline=True)
-            embed.set_footer(
-                text=ctx.author, icon_url=ctx.author.avatar_url)
-            await ctx.send(embed=embed)
+    # @mentee.command()
+    # @has_any_role(admin_mentor_role_id, mentors_role_id)
+    # async def check(self, ctx, user):
+    #     '''
+    #     Comando mentee check
+    #     '''
+    #     try:
+    #         await ctx.message.delete()
+    #         userId = int(re.search(r'\d+', user).group())
+    #         member = await ctx.guild.fetch_member(userId)
+    #         mentee = self.db.get_mentee_by_discord_id(userId)
+    #         # Send message
+    #         embed = Embed(title=f"Información de {member.display_name}",
+    #                       description=f"Cantidad de penalizaciones: {mentee['data']['warns_quantity']}", color=0xBD00FF)
+    #         embed.add_field(name="ID del usuario",
+    #                         value=userId, inline=True)
+    #         embed.set_footer(
+    #             text=ctx.author, icon_url=ctx.author.avatar_url)
+    #         await ctx.send(embed=embed)
 
-        except Exception as e:
-            if type(e) is faunadb.errors.NotFound:
-                # Send message
-                embed = discord.Embed(title=f"Información de {member.display_name}",
-                                      description="No hay datos registrados.", color=0xBD00FF)
-                embed.add_field(name="ID del usuario",
-                                value=userId, inline=True)
-                embed.set_footer(
-                    text=ctx.author, icon_url=ctx.author.avatar_url)
-                await ctx.send(embed=embed)
-            else:
-                print(e)
+    #     except Exception as e:
+    #         if type(e) is faunadb.errors.NotFound:
+    #             # Send message
+    #             embed = discord.Embed(title=f"Información de {member.display_name}",
+    #                                   description="No hay datos registrados.", color=0xBD00FF)
+    #             embed.add_field(name="ID del usuario",
+    #                             value=userId, inline=True)
+    #             embed.set_footer(
+    #                 text=ctx.author, icon_url=ctx.author.avatar_url)
+    #             await ctx.send(embed=embed)
+    #         else:
+    #             print(e)
 
-    @check.error
-    async def mentee_error(self, ctx, error):
-        if isinstance(error, MissingAnyRole):
-            await ctx.message.delete()
-            await ctx.channel.send("No tienes el rol Mentors/Admin-Mentors", delete_after=30)
-        elif isinstance(error, MissingRequiredArgument):
-            await ctx.message.delete()
-            await ctx.channel.send("Por favor, etiquetar el usuario que desea consultar.", delete_after=30)
-        else:
-            raise error
+    # @check.error
+    # async def mentee_error(self, ctx, error):
+    #     if isinstance(error, MissingAnyRole):
+    #         await ctx.message.delete()
+    #         await ctx.channel.send("No tienes el rol Mentors/Admin-Mentors", delete_after=30)
+    #     elif isinstance(error, MissingRequiredArgument):
+    #         await ctx.message.delete()
+    #         await ctx.channel.send("Por favor, etiquetar el usuario que desea consultar.", delete_after=30)
+    #     else:
+    #         raise error
 
     @mentee.command()
     @has_any_role(admin_mentor_role_id, mentors_role_id)
