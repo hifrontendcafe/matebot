@@ -31,4 +31,6 @@ jobs:
           -e "DISCORD_PREFIX=${{ secrets.DISCORD_PREFIX }}"
           -e "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}"
           -e "FAUNADB_SECRET_KEY=${{ secrets.FAUNADB_SECRET_KEY }}"
+          -e "AWS_URL=${{ secrets.AWS_URL }}"
+          -e "AWS_API_KEY=${{ secrets.AWS_API_KEY }}"
           --name matebot "matebot-image:$(echo ${GITHUB_SHA} | cut -c1-8)"
