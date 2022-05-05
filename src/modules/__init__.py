@@ -11,4 +11,3 @@ from .newMembers import NewMembers
 from .info import Info
 from .mentorships import Mentorship
 from .reminders import Reminders
-# from .mentionNewMembers import MentionNewMembers
