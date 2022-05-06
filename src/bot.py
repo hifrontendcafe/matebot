@@ -46,9 +46,8 @@ if __name__ == "__main__":
     # Lista de módulos activa
     bot.add_cog(modules.Help(bot))
     bot.add_cog(modules.Welcome(bot))
-    bot.add_cog(modules.FAQ(bot))
     bot.add_cog(modules.Polls(bot))
-    bot.add_cog(modules.Search(bot))
+    # bot.add_cog(modules.Search(bot))
     bot.add_cog(modules.NewMembers(bot))
     bot.add_cog(modules.Info(bot))
     bot.add_cog(modules.Mentorship(bot))
