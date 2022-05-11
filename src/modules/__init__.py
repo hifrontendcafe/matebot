@@ -2,7 +2,6 @@
 
 from .help import Help
 from .welcome import Welcome
-from .events import Events
 from .scheduler import Scheduler
 from .polls import Polls
 # from .search import Search
