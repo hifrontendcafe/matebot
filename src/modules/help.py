@@ -31,12 +31,9 @@ class Help(commands.Cog):
         h.title = f"Ayuda General"
         h.description = f"Lista de comandos disponibles.\nPara mas ayuda escriba: `{PREFIX}help <comando>`"
         h.fields = [
-            # (f"{PREFIX}reminder", "Genera un recordatorio que se emite de forma automática con las siguientes frecuencias:\n\
-            # - 1 día antes del evento.\n\
-            # - 1 hora antes del evento.\n\
-            # - 10 minutos antes del evento."),
-            (f"{PREFIX}poll", "Genera una interfase con botones para poder realizar encuestas y votaciones."),
-            # (f"{PREFIX}search", "Hace busquedas en la web y muestra los resultados.")
+            (f"{PREFIX}poll", "Genera una flujo interactivo de mensajes con reacciones para poder realizar encuestas y votaciones."),
+            (f"{PREFIX}reminder", "Genera una flujo interactivo de mensajes con reacciones para poder realizar recordatorios."),
+            (f"{PREFIX}help", "Imprime esta ayuda."),
         ]
 
         embed = h.generate_embed()

@@ -1,5 +1,7 @@
 # Modulo polls.py v1
 
+# Refactor pendiente
+
 # ///---- Imports ----///
 import re
 import os
