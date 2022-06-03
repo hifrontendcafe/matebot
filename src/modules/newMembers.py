@@ -1,5 +1,11 @@
+'''
+Módulo para darle la bienvenida a los nuevos miembros de FrontendCafé
+Los mensajes de bienvenida se eliminan luego de una hora
+'''
+
 # ///---- Imports ----///
 import logging
+import random
 import os
 from time import time
 from discord.ext import commands
@@ -11,7 +17,7 @@ log = logging.getLogger(__name__)
 
 class NewMembers(commands.Cog):
     '''
-    Saludo de bienvenida al server a los nuevos miembros
+    Saludo de bienvenida al server
     '''
     def __init__(self, bot):
         '''

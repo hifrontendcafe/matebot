@@ -3,12 +3,13 @@
 Funciones del bot:
 
 - [x] Bienvenida:
-    - Da la bienvenida a los usuarios que entran al servidor de FrontendCafé por primera vez.
+    - Da la bienvenida a los usuarios que entrar al server por primera vez.
+- [x] FAQ:
+    - Muestra una serie de preguntas y respuestas habituales para conocer el funcionamiento del server FrontEndCafe.
 - [x] Recordatorios de eventos:
-    - El bot envía recordatorios con cierta frecuencia antes del evento (para uso general).
-    - Se pueden realizar recordatorios únicos con hora y fecha, o recordatorios semanales o mensuales (periódicos).
+    - El bot envía recordatorios con cierta frecuencia antes del evento (de uso general).
 - [x] Generador de encuestas:
-    - Permite generar encuestas, hacer votaciones y finalizarlas.
+    - Permte genera encuestas, hacer votaciones y finalizarlas.
 - [x] Busquedas web:
     - Permite buscar mediante palabras clave y mostrar los resultados encontrados.
 

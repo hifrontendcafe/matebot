@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# DEPRECATED 😭
-
 import os
 import logging
 import asyncio

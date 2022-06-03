@@ -2,6 +2,7 @@ discord.py==1.7.2
 python-dotenv==0.15.0
 apscheduler==3.9.1
 faunadb==4.2.0
+TwitterAPI==2.6.5
 beautifulsoup4==4.9.3
 dateparser==1.1.0
 regex==2022.3.2

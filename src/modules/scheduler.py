@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# DEPRECATED 😭 - use reminders.py instead
-
 import os
 import re
 import logging
