@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# Disabled module
-
 import logging
 import requests
 import urllib.parse as parse
