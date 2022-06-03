@@ -18,6 +18,7 @@ from scripts.embeds_reminder import *
 
 
 class Error(Enum):
+    """Enumeración de errores."""
     DATETIME        = 1
     TIMEZONE        = 2
     DATE_HAS_PASSED = 3
@@ -48,7 +49,7 @@ class Reminders(commands.Cog):
 
     `>reminder add`: Agrega un recordatorio mediante una serie de pasos
 
-    `>reminder ls`: Lista los recordatorios creados
+    `>reminder ls`: Lista los recordatorios creados por autor
 
     `>reminder rm <id>`: Elimina un recordatorio dado un id
 
@@ -89,6 +90,9 @@ class Reminders(commands.Cog):
 
     @staticmethod
     def _process_date_time(date, time):
+        """
+        Parseo de fecha y hora. Si hay un error con el formato o la fecha es anterior a la actual, lanza error.
+        """
         date_time = dateparser.parse(f'le {date} {time} -03:00')
         tz = zoneinfo.ZoneInfo('America/Buenos_Aires')
         date_time_now = datetime.now(tz)
@@ -101,6 +105,9 @@ class Reminders(commands.Cog):
 
     @staticmethod
     def colour(colour_type: str) -> int:
+        """
+        Genera un color de acuerdo a un tipo de color.
+        """
         colour = {
             'ERROR': Colour.red().value,
             'INFO': Colour.blue().value,
@@ -110,6 +117,9 @@ class Reminders(commands.Cog):
 
     @staticmethod
     def _process_author(author):
+        """
+        Parsea el autor de un recordatorio para obtener su id.
+        """
         match = re.search(r"\<\@(\!|.)(\d+)\>", author)
         if match == None:
             return None
@@ -118,6 +128,9 @@ class Reminders(commands.Cog):
 
     @staticmethod
     def _process_channel(channel):
+        """
+        Parsea el canal de un recordatorio para obtener su id.
+        """
         match = re.search(r"\<\#(\d+)\>", channel)
         if match:
             channel_id = int(match.group(1))
@@ -126,6 +139,9 @@ class Reminders(commands.Cog):
             return Error.CHANNEL
 
     def _generate_list(self, docs):
+        """
+        Genera una lista de recordatorios a partir de los docs de FaunaDB.
+        """
         fields = []
         for doc in docs:
             data = doc['data']
@@ -162,10 +178,16 @@ f"""
 
     @staticmethod
     def _check_permisson(author, channel):
+        """
+        Chequea si el usuario tiene permisos para crear recordatorios en el canal.
+        """
         permission = author.permissions_in(channel)
         return permission.send_messages
 
     async def action(self, msg, content, channel_id):
+        """
+        Action callback que se ejecuta a la hora y fecha de un recordatorio. Envía un embed con el recordatorio.
+        """
         e = EmbedGenerator()
         e.content = content
         embed = e.generate_embed()
@@ -176,6 +198,9 @@ f"""
 
     @commands.Cog.listener()
     async def on_ready(self):
+        """
+        Listener que se ejecuta cuando el bot se conecta a Discord.
+        """
         log.info("Reminders is on")
         await self._reminder.load()
 

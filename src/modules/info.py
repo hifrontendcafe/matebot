@@ -1,5 +1,7 @@
 # Modulo Info.py
 
+# Disabled module
+
 # ///---- Imports ----///
 import re
 import os

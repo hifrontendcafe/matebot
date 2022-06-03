@@ -137,6 +137,9 @@ class Mentorship(Cog):
 
     @help.error
     async def mentee_error(self, ctx, error):
+        """
+        Chequea si el usuario tiene el rol Mentors o el rol Admin-Mentors
+        """
         if isinstance(error, MissingAnyRole):
             await ctx.message.delete()
             await ctx.channel.send("No tienes el rol Mentors/Admin-Mentors", delete_after=30)
@@ -147,12 +150,15 @@ class Mentorship(Cog):
     @has_any_role(admin_mentor_role_id, mentors_role_id)
     async def warn(self, ctx, user, *reason):
         '''
-        Comando mentee warn
+        Comando mentee warn. Agrega un warning a un usuario y se guarda en la DB de AWS.
         '''
         AWS_URL = self.AWS_URL
         AWS_HEADERS = self.AWS_HEADERS
 
         async def success_message(ctx, member, userId):
+            """
+            Envía mensaje de advertencia con motivo y fecha a un canal.
+            """
             now = datetime.now()
             message = f"""
 > :triangular_flag_on_post:  **{member.mention} ha sido penalizado/a**
@@ -167,6 +173,9 @@ class Mentorship(Cog):
             await ctx.channel.send(message)
 
         async def error_message(ctx, userId):
+            """
+            Envía mensaje de error al usuario si no tiene el rol necesario.
+            """
             adminMentorsRole = discord.utils.get(
                 ctx.guild.roles, id=self.admin_mentor_role_id)
             message = f"""
@@ -207,6 +216,9 @@ class Mentorship(Cog):
 
     @warn.error
     async def mentee_error(self, ctx, error):
+        """
+        Envía mensaje de error si el usuario no tiene el rol Mentors o el rol Admin-Mentors, o si no agregó al usuario.
+        """
         if isinstance(error, MissingAnyRole):
             await ctx.message.delete()
             await ctx.channel.send("No tienes el rol Mentors/Admin-Mentors", delete_after=30)
@@ -226,6 +238,9 @@ class Mentorship(Cog):
         AWS_HEADERS = self.AWS_HEADERS
 
         async def success_message(ctx, member, userId):
+            """
+            Envía mensaje si se logra remover un warning.
+            """
             message = f"""
     > :point_right:  **Se ha removido la penalización a {member.mention}**
     > ⠀
@@ -246,6 +261,9 @@ class Mentorship(Cog):
             await ctx.channel.send(message)
 
         async def error_message(ctx, userId):
+            """
+            Envía mensaje de error al usuario si no tiene el rol necesario.
+            """
             adminMentorsRole = discord.utils.get(
                 ctx.guild.roles, id=self.admin_mentor_role_id)
             message = f"""
@@ -279,6 +297,9 @@ class Mentorship(Cog):
 
     @warn_rm.error
     async def mentee_error(self, ctx, error):
+        """
+        Envía mensaje de error si el usuario no tiene el rol Mentors o el rol Admin-Mentors, o si no agregó al usuario.
+        """
         if isinstance(error, MissingAnyRole):
             await ctx.message.delete()
             await ctx.channel.send("No tienes el rol Staff/Admin-Mentors", delete_after=30)
@@ -342,6 +363,9 @@ class Mentorship(Cog):
         AWS_HEADERS = self.AWS_HEADERS
 
         async def rejected_message(ctx, member, userId):
+            """
+            Envía mensaje para rechazar la solicitud de mentoría de un usuario.
+            """
             adminMentorsRole = discord.utils.get(
                 ctx.guild.roles, id=self.admin_mentor_role_id)
             message = f"""
@@ -353,6 +377,9 @@ class Mentorship(Cog):
             await ctx.channel.send(message)
 
         async def success_message(ctx, member, userId):
+            """
+            Envía mensaje para aceptar la solicitud de mentoría de un usuario.
+            """
             message = f"""
 > :white_check_mark:  **Solicitud de mentoría exitosa**
 > ¡Hola! La mentoría de {member.mention} ha sido registrada satisfactoriamente.
@@ -363,6 +390,9 @@ class Mentorship(Cog):
             await ctx.channel.send(message)
 
         async def error_message(ctx, userId):
+            """
+            Envía mensaje de error si el usuario no tiene el rol necesario.
+            """
             adminMentorsRole = discord.utils.get(
                 ctx.guild.roles, id=self.admin_mentor_role_id)
             message = f"""
@@ -396,6 +426,9 @@ class Mentorship(Cog):
 
     @add.error
     async def add_error(self, ctx, error):
+        """
+        Envía mensaje de error si el usuario no tiene el rol de Mentors/Admin-Mentors, o si no se etiqueta un usuario.
+        """
         if isinstance(error, MissingAnyRole):
             await ctx.message.delete()
             await ctx.channel.send("No tienes el rol Mentors/Admin-Mentors", delete_after=30)
@@ -408,6 +441,9 @@ class Mentorship(Cog):
     @mentee.command()
     @has_role(admins_role_id)
     async def migrate_warnings(self, ctx, warn_quantity=0):
+        """
+        Comando para migrar las advertencias de un usuario a la base de datos de AWS a partir de un json.
+        """
         try:
             counter = 0
             with open("./all_warned_mentees.json") as file:
@@ -434,6 +470,9 @@ class Mentorship(Cog):
 
     @migrate_warnings.error
     async def migrate_warnings_error(self, ctx, error):
+        """
+        Envía mensaje de error si el usuario no tiene el rol de Admins, o si no aclara cuantas advertencias se quieren migrar.
+        """
         if isinstance(error, MissingRole):
             await ctx.message.delete()
             await ctx.channel.send("Solo Admins puede ejecutar este comando", delete_after=30)
@@ -446,6 +485,9 @@ class Mentorship(Cog):
     @mentee.command()
     @has_role(admins_role_id)
     async def migrate_mentorships(self, ctx):
+        """
+        Comando para migrar las mentorías de un usuario a la base de datos de AWS a partir de un json.
+        """
         try:
             counter = 0
             with open("./mentorships.json") as file:
@@ -468,6 +510,9 @@ class Mentorship(Cog):
 
     @migrate_warnings.error
     async def migrate_warnings_error(self, ctx, error):
+        """
+        Envía mensaje de error si el usuario no tiene el rol Admins.
+        """
         if isinstance(error, MissingRole):
             await ctx.message.delete()
             await ctx.channel.send("Solo Admins puede ejecutar este comando", delete_after=30)
@@ -496,6 +541,9 @@ class Mentorship(Cog):
 
     @export_collection.error
     async def mentee_error(self, ctx, error):
+        """
+        Envía mensaje de error si el usuario no tiene el rol de Admins.
+        """
         if isinstance(error, MissingRole):
             await ctx.message.delete()
             await ctx.channel.send("Solo Admins puede ejecutar este comando", delete_after=30)
