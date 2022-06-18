@@ -18,10 +18,11 @@ from scripts.embeds_reminder import *
 
 
 class Error(Enum):
-    DATETIME        = 1
-    TIMEZONE        = 2
+    DATETIME = 1
+    TIMEZONE = 2
     DATE_HAS_PASSED = 3
-    CHANNEL         = 4
+    CHANNEL = 4
+
 
 DAYS = {
     0: "Lunes",
@@ -149,13 +150,14 @@ class Reminders(commands.Cog):
 
             fields.append((
                 title,
-f"""
+                f"""
 {description}
 {channel} | {date_time}
 {author} | {ref_id}
 """
             ))
-        embed = Embed(title="Lista de recordatorios", color=self.colour(colour_type='INFO'))
+        embed = Embed(title="Lista de recordatorios",
+                      color=self.colour(colour_type='INFO'))
         for field in fields:
             embed.add_field(name=field[0], value=field[1], inline=False)
         return embed
@@ -171,14 +173,20 @@ f"""
         embed = e.generate_embed()
         channel = self.bot.get_channel(int(channel_id))
         await channel.send(f"{msg}! <:fecimpostor:755971090471321651>", embed=embed)
+        await self.on_ready()  # Obtengo los recordatorios que están programados
 
     # Comandos del bot
 
     @commands.Cog.listener()
     async def on_ready(self):
-        log.info("Reminders is on")
+        """
+        Cuando el bot se conecta a Discord, remuevo todos los recordatorios de la VM
+        y evitar duplicados. Luego cargo los recordatorios de la DB.
+        """
+        log.info("Deleting all old reminders from DB")
+        await self._reminder._remove_old_event()
+        log.info("Retrieving reminders from database...")
         await self._reminder.load()
-
 
     @commands.group()
     async def reminder(self, ctx):
@@ -186,12 +194,11 @@ f"""
         if ctx.invoked_subcommand is None:
             await ctx.send('Commando inválido ...')
 
-
     @reminder.command()
     async def add(self, ctx):
         """ Comando reminder add
 
-        Agrega un nuevo evento y pograma los recordatorios. Estos pueden ser de tipo:
+        Agrega un nuevo evento y programa los recordatorios. Estos pueden ser de tipo:
         - Una fecha y hora exactos (único aviso)
         - Cada semana/mes en un día exacto (periódicos)
         """
@@ -203,7 +210,8 @@ f"""
 
         # Paso 1: Inicio de creación del recordatorio
         emoji_selection = await create_reminder_embed(ctx, self.bot)
-        if emoji_selection == "❌":  return await ctx.send("👍")
+        if emoji_selection == "❌":
+            return await ctx.send("👍")
 
         # Paso 2: Destinatarios del recordatorio
         text, author_id = await addressee_reminder(ctx, self.bot)
@@ -227,7 +235,8 @@ f"""
             rem_date, rem_time = await date_reminder(ctx, self.bot, self._process_date_time, self.colour)
             self.add_reminder["date"] = rem_date
             self.add_reminder["time"] = rem_time
-            date_time = dateparser.parse(f'le {self.add_reminder["date"]} {self.add_reminder["time"]} -03:00')
+            date_time = dateparser.parse(
+                f'le {self.add_reminder["date"]} {self.add_reminder["time"]} -03:00')
 
         # Paso 7-cron-a: Día de la semana y hora del recordatorio
         if self.add_reminder["type"] == "cron" and is_cron_weekly:
@@ -235,9 +244,10 @@ f"""
             day_of_week = await get_day_week(ctx, self.bot)
             hour, minute = await get_time(ctx, self.bot, self.colour)
             self.add_reminder["cron"] = {
-                "day_of_week": day_of_week, # If semanal: monday, tuesday, wednesday, thursday, friday, saturday or sunday
-                "hour": hour, # hour (0-23)
-                "minute": minute, # minute (0-59)
+                # If semanal: monday, tuesday, wednesday, thursday, friday, saturday or sunday
+                "day_of_week": day_of_week,
+                "hour": hour,  # hour (0-23)
+                "minute": minute,  # minute (0-59)
                 # "end_date": dateparser.parse(f'le {end_date} {rem_time}'),
                 # "timezone": zoneinfo.ZoneInfo('America/Buenos_Aires')
             }
@@ -247,9 +257,9 @@ f"""
             day = await get_day(ctx, self.bot, self.colour)
             hour, minute = await get_time(ctx, self.bot, self.colour)
             self.add_reminder["cron"] = {
-                "day": day, # If monthly, day of the month (1-31)
-                "hour": hour, # hour (0-23)
-                "minute": minute, # minute (0-59)
+                "day": day,  # If monthly, day of the month (1-31)
+                "hour": hour,  # hour (0-23)
+                "minute": minute,  # minute (0-59)
                 # "end_date": dateparser.parse(f'le {end_date} {rem_time}'),
                 # "timezone": zoneinfo.ZoneInfo('America/Buenos_Aires')
             }
@@ -260,7 +270,7 @@ f"""
             date_reminder_embed = f"**Fecha y hora**: {self.add_reminder['date']} {self.add_reminder['time']}"
         if self.add_reminder["type"] == "cron":
             date_reminder_embed = f"**Hora**: {self.add_reminder['cron']['hour']}:{self.add_reminder['cron']['minute']}"
-        
+
         reminder_type = ""
         if self.add_reminder["type"] == "date":
             reminder_type = "__Recordatorio único__"
@@ -283,7 +293,7 @@ siguiente manera:
 {date_reminder_embed}
 {reminder_type}
 """
-        e.fields= [("Reacciones", """
+        e.fields = [("Reacciones", """
 ✅ Se ve bien, crear evento!
 ❌ Nop, volveré a hacerlo
 """)]
@@ -301,13 +311,15 @@ siguiente manera:
 
             e.title = f"{self.add_reminder['title']}"
             e.description = self.add_reminder['description']
-            e.fields = [("Matetip <:fecmate:960390626954854441>", f"Con el comando `{self.PREFIX}reminder help` puedes ver todos los comandos para recordatorios")]
+            e.fields = [("Matetip <:fecmate:960390626954854441>",
+                         f"Con el comando `{self.PREFIX}reminder help` puedes ver todos los comandos para recordatorios")]
             embed = e.generate_embed()
             content = e.content
 
             doc = {}
             if self.add_reminder["type"] == "date":
-                date_time = dateparser.parse(f'le {self.add_reminder["date"]} {self.add_reminder["time"]} -03:00')
+                date_time = dateparser.parse(
+                    f'le {self.add_reminder["date"]} {self.add_reminder["time"]} -03:00')
                 if date_time == None:
                     return
                 doc = await self._reminder.add_date(
@@ -336,12 +348,11 @@ siguiente manera:
                     "ID del recordatorio", doc['ref'].id()
                 )]
                 embed = e.generate_embed()
-                await ctx.send(embed=embed) # Send embed to channel
+                await ctx.send(embed=embed)  # Send embed to channel
             try:
-                await author.send(embed=embed) # Send embed to author by DM
+                await author.send(embed=embed)  # Send embed to author by DM
             except Exception:
                 pass
-
 
     @reminder.command(aliases=["ls"])
     async def list(self, ctx):
@@ -363,11 +374,11 @@ siguiente manera:
             except:
                 await ctx.send(message, delete_after=60)
                 await ctx.send(embed=embed, delete_after=60)
-                
-        else:
-            embed = Embed(title="🟨 Lista Vacía", color=self.colour(colour_type='WARNING'))
-            await ctx.send(embed=embed, delete_after=60)
 
+        else:
+            embed = Embed(title="🟨 Lista Vacía",
+                          color=self.colour(colour_type='WARNING'))
+            await ctx.send(embed=embed, delete_after=60)
 
     @reminder.command(aliases=["rm"])
     async def remove(self, ctx, id_: str):
@@ -379,7 +390,7 @@ siguiente manera:
 
         log.info("Reminder remove")
         doc = await self._reminder.remove(id_, str(ctx.author))
-        
+
         if doc:
             data = doc['data']
             title = f"📅 {data['content']['title']}"
@@ -399,18 +410,19 @@ siguiente manera:
 
             field = [
                 title,
-f"""
+                f"""
 {channel} | {date_time}
 {author} | {ref_id}
 """
             ]
-            embed = Embed(title="🟦 Recordatorio eliminado", color=self.colour(colour_type='INFO'))
+            embed = Embed(title="🟦 Recordatorio eliminado",
+                          color=self.colour(colour_type='INFO'))
             embed.add_field(name=field[0], value=field[1], inline=False)
             await ctx.send(embed=embed, delete_after=60)
         else:
-            embed = Embed(title="🟨 ID no encontrado o no eres el propiteario del evento", color=self.colour(colour_type='WARNING'))
+            embed = Embed(title="🟨 ID no encontrado o no eres el propiteario del evento",
+                          color=self.colour(colour_type='WARNING'))
             await ctx.send(embed=embed, delete_after=60)
-
 
     @reminder.command()
     async def help(self, ctx):
@@ -428,8 +440,10 @@ f"""
         h.description = ""
         h.fields = [
             (f"`{PREFIX}reminder add`", "Programa un nuevo recordatorio."),
-            (f"`{PREFIX}reminder list` o `{PREFIX}reminder ls`", "Lista los recordatorios programados."),
-            (f"`{PREFIX}reminder remove ID` o `{PREFIX}reminder rm ID`", "Elimina un recordatorio programado."),
+            (f"`{PREFIX}reminder list` o `{PREFIX}reminder ls`",
+             "Lista los recordatorios programados."),
+            (f"`{PREFIX}reminder remove ID` o `{PREFIX}reminder rm ID`",
+             "Elimina un recordatorio programado."),
             (f"`{PREFIX}reminder help`", "Muestra la ayuda.")
         ]
         embed = h.generate_embed()
