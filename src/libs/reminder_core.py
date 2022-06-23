@@ -4,10 +4,12 @@ from datetime import date, datetime, timezone
 import logging
 import sys
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import dateparser
 from discord import User
 from libs.database import Database as DB
 
 log = logging.getLogger(__name__)
+
 
 class ReminderCore:
     """ Clase ReminderBase
@@ -23,11 +25,9 @@ class ReminderCore:
         self.sched = AsyncIOScheduler()
         self.sched.start()
 
-
     @property
     def collection(self):
         return self._collection
-
 
     @collection.setter
     def collection(self, value):
@@ -35,11 +35,9 @@ class ReminderCore:
             raise ValueError("The value must be a string")
         self._collection = value
 
-
     @property
     def indexes(self):
         return self._indexes
-
 
     @indexes.setter
     def indexes(self, value):
@@ -47,18 +45,15 @@ class ReminderCore:
             raise ValueError("The value must be a dictionary")
         self._indexes = value
 
-
     @property
     def action(self):
         return self._action
-
 
     @action.setter
     def action(self, value):
         if not callable(value):
             raise ValueError("The value must be a function")
         self._action = value
-
 
     # Funciones privadas
 
@@ -70,21 +65,24 @@ class ReminderCore:
         except:
             return []
 
-
     def _remove_by_id_and_author(self, id_: str, author: str):
         try:
-            doc = self.db.delete_by_id_and_author(self.collection, self.indexes['by_id_and_author'], id_, author)
+            doc = self.db.delete_by_id_and_author(
+                self.collection, self.indexes['by_id_and_author'], id_, author)
             self.sched.remove_job(doc['data']['job'])
             return doc
         except:
             return None
 
-
     async def _remove_old_event(self):
         self.db.delete_by_expired_time(self.indexes['by_time'])
 
-
     def _create_job(self, event):
+        """
+        Creo un job en el scheduler y obtengo el id del mismo.
+        Los args son los datos del recordatorio para el método `self.action`.
+        """
+
         if event['type'] == 'cron':
             cron = event['cron']
             job = self.sched.add_job(
@@ -100,7 +98,8 @@ class ReminderCore:
                 start_date=cron.get('start_date'),
                 end_date=cron.get('end_date'),
                 timezone=cron.get('timezone'),
-                args=[event['message'], event['content'], event['channel']] # message, embed, channel
+                args=[event['message'], event['content'],
+                      event['channel']]
             )
             return job.id
         elif event['type'] == 'date':
@@ -108,12 +107,12 @@ class ReminderCore:
                 self.action,
                 'date',
                 run_date=event['time'],
-                args=[event['message'], event['content'], event['channel']] # message, embed, channel
+                args=[event['message'], event['content'],
+                      event['channel']]
             )
             return job.id
         else:
             log.warn("Event type has to be 'cron' or 'date': %s", event)
-
 
     def _generate_event(self, trigger, trigger_data, author, channel, message, content):
         if trigger == 'cron':
@@ -139,14 +138,15 @@ class ReminderCore:
         else:
             return {}
 
-
     # Funciones publicas
+
     async def add_cron(self, author: User, channel: str, content: str, message: str, cron: dict):
         """Agrega un nuevo recordatio de tipo cron"""
 
         date_time_now = datetime.utcnow().replace(tzinfo=timezone.utc)
 
-        event = self._generate_event('cron', cron, author, channel, message, content)
+        event = self._generate_event(
+            'cron', cron, author, channel, message, content)
         job_id = self._create_job(event)
 
         # Guardo el evento en la base de datos
@@ -165,7 +165,6 @@ class ReminderCore:
         # Genero un registro local
         return self.db.create(self.collection, data)
 
-
     async def add_date(self, author: User, channel: str, message: str, content, time: datetime) -> dict:
         """Agrega un nuevo recordatio de tipo date"""
 
@@ -179,10 +178,12 @@ class ReminderCore:
             # Si la fecha del evento es anterior a la actual salgo
             if date_time < date_time_now:
                 # Si el formato de la fecha es
-                log.error(f'Error... Current time: {date_time_now} | Selected time: {date_time}')
+                log.error(
+                    f'Error... Current time: {date_time_now} | Selected time: {date_time}')
                 return {}
 
-            event = self._generate_event('date', date_time, author, channel, message, content)
+            event = self._generate_event(
+                'date', date_time, author, channel, message, content)
             job_id = self._create_job(event)
 
             # Guardo el evento en la base de datos
@@ -206,7 +207,6 @@ class ReminderCore:
             # Si el formato de la fecha es incorrecto
             log.error(f'Error... {sys.exc_info()[0]}')
             return {}
-
 
     async def load(self):
         """ Carga los eventos de la base de datos
@@ -232,13 +232,19 @@ class ReminderCore:
                     'type':    'cron'
                 }
             elif event_type == 'date':
-                event = {
-                    'channel': doc['data']['channel'],
-                    'content': doc['data']['content'],
-                    'message': doc['data']['message'],
-                    'time':    datetime.fromisoformat(f"{doc['data']['time'].value[:-1]}+00:00"),
-                    'type':    'date'
-                }
+                if dateparser.parse(doc['data']['time'].value[:-1]) < datetime.utcnow():
+                    log.info(
+                        f'Recordatorio {doc["data"]["content"]["title"]} ya pasó, se elimina')
+
+                    continue
+                else:
+                    event = {
+                        'channel': doc['data']['channel'],
+                        'content': doc['data']['content'],
+                        'message': doc['data']['message'],
+                        'time':    datetime.fromisoformat(f"{doc['data']['time'].value[:-1]}+00:00"),
+                        'type':    'date'
+                    }
             else:
                 continue
 
@@ -249,13 +255,12 @@ class ReminderCore:
         # Actulizo la base de datos con los nuevos jobs_id
         return self.db.update_all_jobs(self.collection, new_docs)
 
-
     async def list(self, author: str):
         """Lista todos los eventos programados"""
 
-        events = self.db.get_by_author(index=self.indexes['by_author'], author=author)
+        events = self.db.get_by_author(
+            index=self.indexes['by_author'], author=author)
         return events['data']
-
 
     async def remove(self, id_, author) -> dict:
         """Borro un evento programado"""
