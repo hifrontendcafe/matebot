@@ -127,6 +127,8 @@ class Mentorship(Cog):
              'Dar warning a un usuario con motivo "Ausencia a la mentoría"'),
             (f"{PREFIX}mentee warn @usuario <motivo>",
              f'Dar warning a un usuario con motivo personalizado. Ejemplo:\n`{PREFIX}mentee warn @usuario Llegada tarde y falta de respeto`'),
+            (f"{PREFIX}mentee @usuario <NN> #sala-<X>",
+             f'Avisar al usuario que restan NN minutos para la sesión y que se usará la #sala-X para la mentoría. Ejemplo:\n`{PREFIX}mentee @usuario 30 #sala-1`'),
             (f"{PREFIX}mentee warn_rm @usuario",
              "Remover 1 warning al usuario."),
         ]
