@@ -10,7 +10,6 @@
   - [Notificaciones del server](#notificaciones-del-server)
   - [Recordatorio de eventos](#recordatorio-de-eventos)
 
-
 ## Organización y estructura
 
 ## Usando módulos locales
@@ -18,7 +17,7 @@
 La app está dividida para usar una carpeta llamada `modules`.
 Esta carpeta `modules` contienen archivos con `clases`, donde cada una de estas clases puede representar una funcionalidad:
 
-```
+```bash
 frontend-cafe-bot
 ├── HELPME.md
 ├── libs
@@ -65,6 +64,7 @@ Dentro de esta clase, y haciendo uso de los decoradores, se pueden definir:
 - Los módulos ya registrados se pueden eliminar con `Bot.remove_cog()`.
 
 Ejemplo de un módulo
+
 ```python
 # __init__.py
 
@@ -121,18 +121,21 @@ class General(commands.Cog):
 ## Módulos
 
 ### Bienvenida
+
 TODO
 
 ### Roles
+
 TODO
 
 ### FAQs
+
 TODO
 
 ## Notificaciones del server
+
 TODO
 
 ## Recordatorio de eventos
+
 TODO
-
-
