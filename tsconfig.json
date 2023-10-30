@@ -8,6 +8,7 @@
     "module": "node16",
     "rootDir": "./src",
     "moduleResolution": "node16",
+    "typeRoots": ["./src/types"],
     "outDir": "./dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
