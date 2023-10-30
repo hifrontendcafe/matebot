@@ -1,0 +1,15 @@
+{
+  "name": "matebot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "register": "node dist/deploy-commands.js",
+    "dev": "tsc --watch",
+    "build": "tsc --build",
+    "start": "node dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}
