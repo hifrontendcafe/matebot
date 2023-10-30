@@ -12,6 +12,9 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.13.0"
+  },
   "devDependencies": {
     "@types/node": "^20.8.9",
     "typescript": "^5.2.2"
