@@ -8,7 +8,13 @@ import { resolveCommands } from "./libs/helpers.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages, // Required by the 'messageCreate' event.
+    GatewayIntentBits.MessageContent, // Required by the 'messageCreate' event.
+  ],
+});
 
 // Load command files
 client.commands = new Collection();
