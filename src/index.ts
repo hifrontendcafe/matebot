@@ -1,6 +1,11 @@
-import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
+import { Client, Collection, GatewayIntentBits } from "discord.js";
+import { globSync } from "glob";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { DISCORD_TOKEN } from "./libs/environment.js";
 import { resolveCommands } from "./libs/helpers.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -12,37 +17,21 @@ commands.forEach((command) => {
   client.commands.set(command.data.name, command);
 });
 
-// When the client is ready, run this code (only once)
-client.once(Events.ClientReady, (c) => {
-  console.log(`Ready! Logged in as ${c.user.tag}`);
+// Load events files
+const eventFiles = globSync(`${__dirname}/events/**/*.{js,ts}`, {
+  ignore: {
+    ignored: (file) => file.name.startsWith("_"),
+  },
 });
 
 // Receiving command interactions
-client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
+eventFiles.map(async (file) => {
+  const { default: event } = await import(path.resolve(file));
 
-  const command = interaction.client.commands.get(interaction.commandName);
-
-  if (!command) {
-    console.error(`No command matching ${interaction.commandName} was found.`);
-    return;
-  }
-
-  try {
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(error);
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp({
-        content: "There was an error while executing this command!",
-        ephemeral: true,
-      });
+  if (event.once) {
+    client.once(event.name, (...args) => event.execute(...args));
     } else {
-      await interaction.reply({
-        content: "There was an error while executing this command!",
-        ephemeral: true,
-      });
-    }
+    client.on(event.name, (...args) => event.execute(...args));
   }
 });
 
