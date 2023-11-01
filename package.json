@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "register": "node dist/deploy-commands.js",
-    "dev": "tsc --watch",
+    "dev": "concurrently --names 'TSC,Node' -c 'blue,green' 'tsc --watch' 'node --watch dist'",
     "build": "tsc --build",
     "start": "node dist"
   },
@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.8.9",
+    "concurrently": "^8.2.2",
     "typescript": "^5.2.2"
   }
 }
