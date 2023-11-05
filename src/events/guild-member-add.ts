@@ -1,27 +1,11 @@
-import {
-  Events,
-  GuildMember,
-  User,
-  channelMention,
-  formatEmoji,
-} from "discord.js";
+import { Events, GuildMember, User, channelMention } from "discord.js";
+import { CHANNELS } from "../libs/constants.js";
 import { DiscordEvent } from "../types/index.js";
 
-const CHANNEL = {
-  TEST: channelMention("861980330201841686"),
-  GENERAL: channelMention("594935077637718027"),
-  USER_GUIDE: channelMention("747925827265495111"),
-  CODE_OF_CONDUCT: channelMention("748183026244255824"),
-// FIXME: This channel does not exists.
-  UNKNOWN: channelMention("748547143157022871"),
-} as const;
-
-const EMOJI = {
-  // '<:fecimpostor:755971090471321651>'
-  impostor: formatEmoji("755971090471321651"),
-  // '<:fecstar:755451362950512660>'
-  fec_star: formatEmoji("755451362950512660"),
-} as const;
+const GENERAL = channelMention(CHANNELS.GENERAL);
+const USER_GUIDE = channelMention(CHANNELS.USER_GUIDE);
+const CODE_OF_CONDUCT = channelMention(CHANNELS.CODE_OF_CONDUCT);
+const UNKNOWN = channelMention(CHANNELS.UNKNOWN);
 
 export default {
   name: Events.GuildMemberAdd,
@@ -29,21 +13,21 @@ export default {
     // Direct messages new members with a welcome message.
     await member.send(
       `Hola, te damos la bienvenida a FrontendCafé!!
-      
-      Somos una comunidad de personas interesadas en tecnología y ciencias informáticas. Conversamos sobre lenguajes de programación, diseño web, infraestructura, compartimos dudas y tratamos de resolverlas en conjunto.  
-      Además, nos organizamos en grupos para estudiar, hacer proyectos en equipo y practicar en inglés para perfeccionarnos. Tenemos un espacio de coworking, también nos vamos de after office y jugamos jueguitos!  
-  
-      Aquí abajo dejamos información que **es necesaria que revises antes de comenzar a participar**, yaque es muy importante que contribuyamos a mantener este server como un espacio seguro, amigable y divertido para cualquier persona que participe.  
-  
-      - Código de conducta ${CHANNEL.CODE_OF_CONDUCT}
-      - Manual de uso ${CHANNEL.USER_GUIDE}
-  
-      Por favor, al hacer una consulta dentro del server, intenta incluir la mayor cantidad de datos posibles sobre qué estás intentando, qué errores encuentras y qué quieres lograr para que podamos ayudarte de la mejor manera posible.  
-      
-      Si tienes dudas de dónde publicar la pregunta puedes consultar en ${CHANNEL.GENERAL} y te orientarán. Asimismo, puedes usar el buscador, situado arriba a la derecha, para verificar que tu pregunta no haya sido respondida anteriormente.
-      
-      Nos encantaría que pases por ${CHANNEL.UNKNOWN} y nos cuentes algo de ti :slight_smile:
-      
+
+      Somos una comunidad de personas interesadas en tecnología y ciencias informáticas. Conversamos sobre lenguajes de programación, diseño web, infraestructura, compartimos dudas y tratamos de resolverlas en conjunto.
+      Además, nos organizamos en grupos para estudiar, hacer proyectos en equipo y practicar en inglés para perfeccionarnos. Tenemos un espacio de coworking, también nos vamos de after office y jugamos jueguitos!
+
+      Aquí abajo dejamos información que **es necesaria que revises antes de comenzar a participar**, yaque es muy importante que contribuyamos a mantener este server como un espacio seguro, amigable y divertido para cualquier persona que participe.
+
+      - ${CODE_OF_CONDUCT}
+      - ${USER_GUIDE}
+
+      Por favor, al hacer una consulta dentro del server, intenta incluir la mayor cantidad de datos posibles sobre qué estás intentando, qué errores encuentras y qué quieres lograr para que podamos ayudarte de la mejor manera posible.
+
+      Si tienes dudas de dónde publicar la pregunta puedes consultar en ${GENERAL} y te orientarán. Asimismo, puedes usar el buscador, situado arriba a la derecha, para verificar que tu pregunta no haya sido respondida anteriormente.
+
+      Nos encantaría que pases por ${UNKNOWN} y nos cuentes algo de ti :slight_smile:
+
       Saludos!
       *El Staff de FrontendCafé*`.replace(/  +/g, "")
     );
@@ -74,7 +58,7 @@ export default {
       }
 
       // Find a specific channel by the ID.
-      const channel = member.client.channels.cache.get(CHANNEL.GENERAL);
+      const channel = member.client.channels.cache.get(GENERAL);
       if (!channel || !channel.isTextBased()) {
         const reason =
           channel && !channel.isTextBased()
@@ -82,7 +66,7 @@ export default {
             : "El canal no existe.";
 
         console.error(
-          `No se ha podido enviar el mensaje al canal con ID: ${CHANNEL.GENERAL}. ${reason}`
+          `No se ha podido enviar el mensaje al canal con ID: ${GENERAL}. ${reason}`
         );
         return;
       }
@@ -108,7 +92,7 @@ export default {
             thumbnail: {
               url: "https://res.cloudinary.com/sebasec/image/upload/v1614807768/Fec_with_Shadow_jq8ll8.png",
             },
-            description: `Pueden presentarse en este canal, ${CHANNEL.GENERAL} y leer el ${CHANNEL.USER_GUIDE} para conocer cómo participar en nuestra comunidad ${EMOJI.impostor}`,
+            description: `Pueden presentarse en este canal, ${GENERAL} y leer el ${USER_GUIDE} para conocer cómo participar en nuestra comunidad ${EMOJI.impostor}`,
           },
         ],
       });
@@ -116,7 +100,7 @@ export default {
       //
     } else {
       updateList(dbUserIds, dbUserCount, time_zero, delta);
-      }
+    }
   },
 } satisfies DiscordEvent;
 

@@ -1,7 +1,12 @@
-import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import {
+  CommandInteraction,
+  SlashCommandBuilder,
+  SlashCommandUserOption,
+} from "discord.js";
 import { globSync } from "glob";
 import path from "node:path";
 import { fileURLToPath } from "url";
+import { TARGET_OPTIONS } from "./constants.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -33,4 +38,11 @@ export async function resolveCommands() {
   });
 
   return (await Promise.all(commands)).filter(Boolean) as Command[];
+}
+
+export function userToMention(option: SlashCommandUserOption) {
+  return option
+    .setName(TARGET_OPTIONS.USERNAME)
+    .setDescription("Mencionar a un usuario")
+    .setRequired(true);
 }

@@ -1,12 +1,12 @@
 import {
   CommandInteraction,
   SlashCommandBuilder,
-  SlashCommandUserOption,
   channelMention,
   hyperlink,
 } from "discord.js";
+import { CHANNELS, TARGET_OPTIONS } from "../libs/constants.js";
+import { userToMention } from "../libs/helpers.js";
 
-const TARGET = "user";
 const CODEPEN_LINK = hyperlink("CodePen", "https://codepen.io/");
 
 const COMMAND = {
@@ -15,17 +15,8 @@ const COMMAND = {
   M: "m",
 } as const;
 
-const CHANNEL = {
-  INFO: channelMention("747925827265495111"),
-  MUSIC: channelMention("1072505355839488081"),
-} as const;
-
-function userToMention(option: SlashCommandUserOption) {
-  return option
-    .setName(TARGET)
-    .setDescription("Usuario a mencionar")
-    .setRequired(true);
-}
+const USER_GUIDE = channelMention(CHANNELS.USER_GUIDE);
+const MUSIC = channelMention(CHANNELS.MUSIC);
 
 export const data = new SlashCommandBuilder()
   .setName(COMMAND.INFO)
@@ -47,7 +38,7 @@ export async function execute(interaction: CommandInteraction) {
   if (!interaction.isChatInputCommand()) return;
 
   const subcommand = interaction.options.getSubcommand();
-  const user = interaction.options.getUser(TARGET);
+  const user = interaction.options.getUser(TARGET_OPTIONS.USERNAME);
   if (!user) {
     return await interaction.reply({
       ephemeral: true,
@@ -71,7 +62,7 @@ export async function execute(interaction: CommandInteraction) {
 5. Si deseas compartir el código en el mensaje envuélvelo siempre en triple comilla invertida (\`\`\`).
 6. Contanos qué has intentado y qué no te funcionó.
 
-**Para más información pasate por ${CHANNEL.INFO}**`,
+**Para más información pasate por ${USER_GUIDE}**`,
         },
       ],
     });
@@ -85,7 +76,7 @@ export async function execute(interaction: CommandInteraction) {
       embeds: [
         {
           color: 0x00c29d,
-          description: `Los comandos de los bots de música se tipean en ${CHANNEL.MUSIC} para evitar el spam en el resto de los canales.`,
+          description: `Los comandos de los bots de música se tipean en ${MUSIC} para evitar el spam en el resto de los canales.`,
         },
       ],
     });

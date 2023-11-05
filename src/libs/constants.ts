@@ -1,0 +1,30 @@
+import { formatEmoji } from "discord.js";
+
+export const CHANNELS = {
+  TEST: "861980330201841686",
+  USER_GUIDE: "747925827265495111",
+  CODE_OF_CONDUCT: "748183026244255824",
+  GENERAL: "594935077637718027",
+  MUSIC: "1072505355839488081",
+  UNKNOWN: "748547143157022871",
+} as const;
+
+export const EMOJIS = {
+  impostor: formatEmoji("755971090471321651"),
+  fec_star: formatEmoji("755451362950512660"),
+} as const;
+
+export const ROLES = {
+  STAFF: "936626779798507601",
+  ADMINS: "645411178398351363",
+  ADMIN_MENTORS: "875764700418297868",
+  MENTORS: "645409801844555787",
+  MENTEES: "760923008260636722",
+} as const;
+
+export const TARGET_OPTIONS = {
+  USERNAME: "username",
+  CHANNEL: "channel",
+  MINUTES: "minutes",
+  REASON: "reason",
+} as const;
