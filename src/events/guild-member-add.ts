@@ -1,5 +1,5 @@
 import { Events, GuildMember, User, channelMention } from "discord.js";
-import { CHANNELS } from "../libs/constants.js";
+import { CHANNELS, EMOJIS } from "../libs/constants.js";
 import { DiscordEvent } from "../types/index.js";
 
 const GENERAL = channelMention(CHANNELS.GENERAL);
@@ -92,7 +92,7 @@ export default {
             thumbnail: {
               url: "https://res.cloudinary.com/sebasec/image/upload/v1614807768/Fec_with_Shadow_jq8ll8.png",
             },
-            description: `Pueden presentarse en este canal, ${GENERAL} y leer el ${USER_GUIDE} para conocer cómo participar en nuestra comunidad ${EMOJI.impostor}`,
+            description: `Pueden presentarse en este canal, ${GENERAL} y leer el ${USER_GUIDE} para conocer cómo participar en nuestra comunidad ${EMOJIS.impostor}`,
           },
         ],
       });
