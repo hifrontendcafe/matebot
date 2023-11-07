@@ -13,6 +13,7 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages, // Required by the 'messageCreate' event.
     GatewayIntentBits.MessageContent, // Required by the 'messageCreate' event.
+    GatewayIntentBits.GuildMessageReactions,
   ],
 });
 
