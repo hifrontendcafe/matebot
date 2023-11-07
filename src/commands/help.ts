@@ -1,12 +1,12 @@
-import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import { CacheType, Interaction, SlashCommandBuilder } from "discord.js";
 import { DISCORD_PREFIX as PREFIX } from "../libs/environment.js";
 
 export const data = new SlashCommandBuilder()
   .setName("help")
   .setDescription("Lista de comandos disponibles.");
 
-export async function execute(interaction: CommandInteraction) {
-  console.info("General Help");
+export async function execute(interaction: Interaction<CacheType>) {
+  if (!interaction.isChatInputCommand()) return;
 
   await interaction.reply({
     ephemeral: true,
@@ -14,11 +14,6 @@ export async function execute(interaction: CommandInteraction) {
       {
         color: 0x00c29d,
         title: "Ayuda General",
-        author: {
-          name: interaction.client.user.displayName,
-          icon_url: interaction.client.user.avatarURL()!,
-          url: "https://frontend.cafe/",
-        },
         thumbnail: {
           url: "https://res.cloudinary.com/sebasec/image/upload/v1614807768/Fec_with_Shadow_jq8ll8.png",
         },

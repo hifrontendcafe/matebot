@@ -2,8 +2,9 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  CacheType,
   ChannelType,
-  CommandInteraction,
+  Interaction,
   SlashCommandBuilder,
   roleMention,
 } from "discord.js";
@@ -98,7 +99,7 @@ const confirmationButtons = new ActionRowBuilder<ButtonBuilder>().setComponents(
   confirm
 );
 
-export async function execute(interaction: CommandInteraction) {
+export async function execute(interaction: Interaction<CacheType>) {
   if (!interaction.isChatInputCommand()) return;
 
   const subcommand = interaction.options.getSubcommand();

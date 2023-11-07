@@ -1,5 +1,6 @@
 import {
-  CommandInteraction,
+  CacheType,
+  Interaction,
   SlashCommandBuilder,
   channelMention,
   hyperlink,
@@ -34,7 +35,7 @@ export const data = new SlashCommandBuilder()
       .addUserOption(userToMention)
   );
 
-export async function execute(interaction: CommandInteraction) {
+export async function execute(interaction: Interaction<CacheType>) {
   if (!interaction.isChatInputCommand()) return;
 
   const subcommand = interaction.options.getSubcommand();
