@@ -83,7 +83,7 @@ The development server should reload on every file change.
 
 To create a new command, create a new file in the **[commands](src/commands)** directory. The file name should match the name of the command. For example, to create a command called _hello_, create a file called _`hello.js`_.
 
-The command file should export both `data` and `execute` [as seem here](src/commands/testing/ping.ts).
+The command file should export both `data` and `execute` [as seem here](src/commands/testing/_ping.ts).
 
 > [!WARNING]
 > Make sure you put every command file inside the **[`src/commands`](src/commands)** folder or in it's subfolders.
