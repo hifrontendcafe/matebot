@@ -1,5 +1,4 @@
 import { CacheType, Interaction, SlashCommandBuilder } from "discord.js";
-import { DISCORD_PREFIX as PREFIX } from "../libs/environment.js";
 
 export const data = new SlashCommandBuilder()
   .setName("help")

@@ -1,6 +1,6 @@
 import { AWS_API_KEY, AWS_URL } from "./environment.js";
 
-const AWS_HEADERS = { "x-api-key": AWS_API_KEY! };
+const AWS_HEADERS = { "x-api-key": AWS_API_KEY };
 
 export async function patchWarning({
   authorId,

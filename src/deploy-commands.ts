@@ -9,7 +9,7 @@ import { resolveCommands } from "./libs/helpers.js";
 
 const commands = await resolveCommands();
 
-const rest = new REST().setToken(DISCORD_TOKEN!);
+const rest = new REST().setToken(DISCORD_TOKEN);
 
 (async () => {
   try {
@@ -20,8 +20,8 @@ const rest = new REST().setToken(DISCORD_TOKEN!);
     // The put method is used to fully refresh all commands in the guild (in dev), or globally.
     const data = await rest.put(
       isProd
-        ? Routes.applicationCommands(CLIENT_ID!)
-        : Routes.applicationGuildCommands(CLIENT_ID!, GUILD_ID!),
+        ? Routes.applicationCommands(CLIENT_ID)
+        : Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
 
       { body: commands.map((command) => command.data.toJSON()) }
     );
