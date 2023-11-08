@@ -11,8 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages, // Required by the 'messageCreate' event.
-    GatewayIntentBits.MessageContent, // Required by the 'messageCreate' event.
+    GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMessageReactions,
   ],
 });
@@ -37,7 +36,7 @@ eventFiles.map(async (file) => {
 
   if (event.once) {
     client.once(event.name, (...args) => event.execute(...args));
-    } else {
+  } else {
     client.on(event.name, (...args) => event.execute(...args));
   }
 });
