@@ -21,7 +21,7 @@ const MUSIC = channelMention(CHANNELS.MUSIC);
 
 export const data = new SlashCommandBuilder()
   .setName(COMMAND.INFO)
-  .setDescription(`Comando /${COMMAND.INFO}`)
+  .setDescription("Comandos para enviar información a los miembros")
   .addSubcommand((subcommand) =>
     subcommand
       .setName(COMMAND.Q)

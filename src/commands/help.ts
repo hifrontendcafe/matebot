@@ -17,10 +17,11 @@ export async function execute(interaction: Interaction<CacheType>) {
         thumbnail: {
           url: "https://res.cloudinary.com/sebasec/image/upload/v1614807768/Fec_with_Shadow_jq8ll8.png",
         },
-        description: `Lista de comandos disponibles.\nPara mas ayuda escriba: \`${PREFIX}help <comando>\``,
+        description:
+          "Lista de comandos disponibles.\nPara mas ayuda escriba: `/help <comando>`",
         fields: [
           // {
-          //   name: `${PREFIX}reminder`,
+          //   name: `/reminder`,
           //   value:
           //     "Genera un recordatorio que se emite de forma automática con las siguientes frecuencias:  \n\
           //     - 1 día antes del evento.  \n\
@@ -28,13 +29,19 @@ export async function execute(interaction: Interaction<CacheType>) {
           //     - 10 minutos antes del evento.",
           // },
           {
-            name: `${PREFIX}poll`,
-            value:
-              "Genera una interfase con botones para poder realizar encuestas y votaciones.",
+            name: `/info`,
+            value: "Comandos para enviar información a los miembros.",
             // inline: true,
           },
+          {
+            name: `/poll`,
+            value:
+              "Crear una encuesta básica Si/No, o con multiples opciones (10 max).",
+            // inline: true,
+          },
+
           // {
-          //   name: `${PREFIX}search`,
+          //   name: `/search`,
           //   value: "Hace busquedas en la web y muestra los resultados.",
           //   inline: true,
           // },

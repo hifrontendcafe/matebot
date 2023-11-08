@@ -3,7 +3,9 @@ import { EMOJI_NUMBERS } from "../libs/constants.js";
 
 const data = new SlashCommandBuilder()
   .setName("poll")
-  .setDescription("Initiates a poll")
+  .setDescription(
+    "Crear una encuesta básica Si/No, o con multiples opciones (10 max)."
+  )
   .setDefaultMemberPermissions(0)
   .setDMPermission(false)
   .addStringOption((option) =>

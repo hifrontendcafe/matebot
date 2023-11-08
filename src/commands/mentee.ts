@@ -32,7 +32,7 @@ export const data = new SlashCommandBuilder()
   .addSubcommand((subcommand) =>
     subcommand
       .setName(COMMANDS.HELP)
-      .setDescription("Obtén información sobre los comandos '/mentee'")
+      .setDescription("Obtén información sobre los comandos `/mentee`")
   )
   .addSubcommand((subcommand) =>
     subcommand
