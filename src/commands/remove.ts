@@ -55,6 +55,13 @@ export async function execute(interaction: Interaction<CacheType>) {
   const user = interaction.options.getUser(TARGET_OPTIONS.USERNAME, true);
   const reason = interaction.options.getString(TARGET_OPTIONS.REASON);
 
+  const role = interaction.guild?.roles.cache.get(ROLES.MENTEES);
+  if (!role) {
+    const message = `> No se pudo encontrar el rol con ID: ${ROLES.MENTEES}`;
+    await interaction.reply({ ephemeral: true, content: message });
+    return console.log(message);
+  }
+
   const member = await interaction.guild?.members
     .fetch(user.id)
     .catch(console.error);
@@ -97,8 +104,7 @@ export async function execute(interaction: Interaction<CacheType>) {
           `);
 
           return await interaction.deleteReply();
-        }
-        else if (data["code"] === "301") {
+        } else if (data["code"] === "301") {
           await confirmation.update({
             content: `
               > :ballot_box_with_check:  **${member} no tiene penalizaciones**
