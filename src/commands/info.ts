@@ -36,7 +36,7 @@ export const data = new SlashCommandBuilder()
   );
 
 export async function execute(interaction: Interaction<CacheType>) {
-  if (!interaction.isChatInputCommand()) return;
+  if (!interaction.isChatInputCommand() || !interaction.channel) return;
 
   const subcommand = interaction.options.getSubcommand();
   const user = interaction.options.getUser(TARGET_OPTIONS.USERNAME);
@@ -48,8 +48,7 @@ export async function execute(interaction: Interaction<CacheType>) {
   }
 
   if (COMMAND.Q === subcommand) {
-    await interaction.reply({
-      ephemeral: true,
+    await interaction.channel.send({
       target: user,
       content: `Hola ${user}, te dejamos algunos tips para realizar tu pregunta`,
       embeds: [
@@ -70,8 +69,7 @@ export async function execute(interaction: Interaction<CacheType>) {
 
     //
   } else if (COMMAND.M === subcommand) {
-    await interaction.reply({
-      ephemeral: true,
+    await interaction.channel.send({
       target: user,
       content: `¡Hola ${user}!`,
       embeds: [
@@ -82,4 +80,7 @@ export async function execute(interaction: Interaction<CacheType>) {
       ],
     });
   }
+
+  await interaction.deferReply();
+  await interaction.deleteReply();
 }
