@@ -1,20 +1,19 @@
-FROM python:3.9-alpine
+FROM node:20-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+COPY . /app
+WORKDIR /app
 
-# Elijo esta carpeta como carpeta de trabajo
-WORKDIR /bot
+FROM base AS prod-deps
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 
-# Copio requirements.txt y el contenido de src/ en /bot
-COPY requirements.txt src/ ./
+FROM base AS build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm run build
 
-# Instalo algunas dependencias porque las necesitan algunos paquetes de python
-RUN apk update \
-    && apk add --no-cache gcc python3-dev musl-dev libc-dev
-
-# Actualizo pip
-RUN pip install --upgrade pip
-
-# Instalo los paquetes de python
-RUN pip install -r requirements.txt
-
-# Inicio el bot
-CMD ["python3", "bot.py"]
+FROM base
+COPY --from=prod-deps /app/node_modules /app/node_modules
+COPY --from=build /app/dist /app/dist
+EXPOSE 8000
+CMD [ "pnpm", "start" ]
