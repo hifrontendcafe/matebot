@@ -15,6 +15,7 @@
   "dependencies": {
     "discord.js": "^14.13.0",
     "dotenv": "^16.3.1",
+    "faunadb": "^4.8.0",
     "glob": "^10.3.10",
     "zod": "^3.22.4"
   },
@@ -22,5 +23,8 @@
     "@types/node": "^20.8.9",
     "concurrently": "^8.2.2",
     "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": "20.x"
   }
 }
