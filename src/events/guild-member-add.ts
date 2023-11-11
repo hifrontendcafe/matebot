@@ -1,6 +1,7 @@
 import { Events, GuildMember, User, channelMention } from "discord.js";
 import { CHANNELS, EMOJIS } from "../libs/constants.js";
 import { DiscordEvent } from "../types/index.js";
+import { getUserList, updateUserList } from "../database/queries.js";
 
 const GENERAL = channelMention(CHANNELS.GENERAL);
 const USER_GUIDE = channelMention(CHANNELS.USER_GUIDE);
@@ -32,11 +33,9 @@ export default {
       *El Staff de FrontendCafé*`.replace(/  +/g, "")
     );
 
-    const storedUsers = getList();
+    const storedUsers = await getList();
     if (!storedUsers) {
-      console.error(
-        "No se pudo encontrar lista de usuarios en la base de datos."
-      );
+      console.error("No se pudo encontrar lista de usuarios en la base de datos.");
       return;
     }
 
@@ -61,13 +60,9 @@ export default {
       const channel = member.client.channels.cache.get(GENERAL);
       if (!channel || !channel.isTextBased()) {
         const reason =
-          channel && !channel.isTextBased()
-            ? "No es un canal de texto."
-            : "El canal no existe.";
+          channel && !channel.isTextBased() ? "No es un canal de texto." : "El canal no existe.";
 
-        console.error(
-          `No se ha podido enviar el mensaje al canal con ID: ${GENERAL}. ${reason}`
-        );
+        console.error(`No se ha podido enviar el mensaje al canal con ID: ${GENERAL}. ${reason}`);
         return;
       }
 
@@ -80,7 +75,7 @@ export default {
         .join(", ");
 
       dbUserIds = [];
-      updateList(dbUserIds, dbUserCount, time_final, new_delta);
+      await updateList(dbUserIds, dbUserCount, time_final, new_delta);
 
       // Sends a message after X number of members have joined the server.
       await channel.send({
@@ -99,7 +94,7 @@ export default {
 
       //
     } else {
-      updateList(dbUserIds, dbUserCount, time_zero, delta);
+      await updateList(dbUserIds, dbUserCount, time_zero, delta);
     }
   },
 } satisfies DiscordEvent;
@@ -110,15 +105,15 @@ export default {
  * - Poscondición: Se obtiene la lista de usuarios nuevos, la condición de usuarios nuevos, el tiempo de inicio y el tiempo de espera
  * @returns
  */
-function getList() {
+async function getList() {
   try {
-    // const doc = db.get('Users', '292960205647380995')["data"]
+    const { data } = await getUserList();
 
     return {
-      newUsersId: ["0"], // doc["new_users_id"],
-      userCondition: 0, // doc["user_condition"],
-      timeSec: 0, // doc["time_sec"],
-      timeDelta: 0, // doc["time_delta"],
+      newUsersId: data["new_users_id"],
+      userCondition: data["user_condition"],
+      timeSec: data["time_sec"],
+      timeDelta: data["time_delta"],
     };
   } catch (error) {
     console.error(`Hubo un error en getList: ${error}`);
@@ -135,20 +130,15 @@ function getList() {
  * @param delta
  * @returns
  */
-function updateList(
-  list_users: string[],
-  users: number,
-  time_zero: number,
-  delta: number
-) {
+async function updateList(list_users: string[], users: number, time_zero: number, delta: number) {
   try {
-    // const doc = db.db.update('Users', '292960205647380995', {
-    //   "new_users_id": list_users,
-    //   "user_condition": users,
-    //   "time_sec": time_zero,
-    //   "time_delta": delta
-    // })
-    // return (doc)
+    const doc = await updateUserList({
+      new_users_id: list_users,
+      user_condition: users,
+      time_sec: time_zero,
+      time_delta: delta,
+    });
+    return doc;
   } catch (error) {
     console.error(`Hubo un error en updateList: ${error}`);
   }
