@@ -14,11 +14,13 @@ type GetUserList = {
 };
 
 export async function getUserList(): Promise<GetUserList> {
-  return await client.query(query.Get(query.Ref(query.Collection("Users"), "319190874626982481")));
+  return await client.query<GetUserList>(
+    query.Get(query.Ref(query.Collection("Users"), "319190874626982481"))
+  );
 }
 
 export async function updateUserList(data: UserCollectionData) {
-  return await client.query(
+  return await client.query<GetUserList>(
     query.Update(query.Ref(query.Collection("Users"), "319190874626982481"), {
       data,
     })

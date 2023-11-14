@@ -35,67 +35,73 @@ export default {
 
     const storedUsers = await getList();
     if (!storedUsers) {
-      console.error("No se pudo encontrar lista de usuarios en la base de datos.");
+      console.error(
+        "No se pudo encontrar lista de usuarios en la base de datos."
+      );
       return;
     }
 
-    let dbUserIds = storedUsers.newUsersId;
+    const dbUserIds = new Set(storedUsers.newUsersId);
     let dbUserCount = storedUsers.userCondition;
-    const time_zero = storedUsers.timeSec;
+    const timeZero = storedUsers.timeSec;
     const delta = storedUsers.timeDelta;
 
-    dbUserIds.push(member.id);
+    dbUserIds.add(member.id);
 
-    if (dbUserIds.length === dbUserCount) {
-      const time_final = Date.now() || +new Date();
-      const new_delta = time_final - time_zero;
-
-      if (delta < new_delta && dbUserCount >= 20) {
-        dbUserCount -= 1;
-      } else {
-        dbUserCount += 1;
-      }
-
-      // Find a specific channel by the ID.
-      const channel = member.client.channels.cache.get(GENERAL);
-      if (!channel || !channel.isTextBased()) {
-        const reason =
-          channel && !channel.isTextBased() ? "No es un canal de texto." : "El canal no existe.";
-
-        console.error(`No se ha podido enviar el mensaje al canal con ID: ${GENERAL}. ${reason}`);
-        return;
-      }
-
-      const newMembers = dbUserIds
-        // Finds users on the server from IDs stored in the database
-        .map((userId) => member.client.users.cache.get(userId))
-        // Filter users who are not in the server
-        .filter((newUser): newUser is User => Boolean(newUser))
-        // Returns a comma-separated list of mentionable usernames.
-        .join(", ");
-
-      dbUserIds = [];
-      await updateList(dbUserIds, dbUserCount, time_final, new_delta);
-
-      // Sends a message after X number of members have joined the server.
-      await channel.send({
-        content: `Welcome ${newMembers}!`,
-        embeds: [
-          {
-            color: 0x00c29d,
-            title: "",
-            thumbnail: {
-              url: "https://res.cloudinary.com/sebasec/image/upload/v1614807768/Fec_with_Shadow_jq8ll8.png",
-            },
-            description: `Pueden presentarse en este canal, ${GENERAL} y leer el ${USER_GUIDE} para conocer cómo participar en nuestra comunidad ${EMOJIS.impostor}`,
-          },
-        ],
-      });
-
-      //
-    } else {
-      await updateList(dbUserIds, dbUserCount, time_zero, delta);
+    if (dbUserIds.size !== dbUserCount) {
+      // Update the list of user IDs, and leave the rest as it was.
+      await updateList(Array.from(dbUserIds), dbUserCount, timeZero, delta);
+      return;
     }
+
+    const timeFinal = Date.now() || +new Date();
+    const newDelta = timeFinal - timeZero;
+
+    if (delta < newDelta && dbUserCount >= 20) {
+      dbUserCount -= 1;
+    } else {
+      dbUserCount += 1;
+    }
+
+    // Clear the list of user IDs and saves the new times.
+    await updateList([], dbUserCount, timeFinal, newDelta);
+
+    // Find a specific channel by the ID.
+    const channel = member.client.channels.cache.get(GENERAL);
+    if (!channel || !channel.isTextBased()) {
+      const reason =
+        channel && !channel.isTextBased()
+          ? "No es un canal de texto."
+          : "El canal no existe.";
+
+      console.error(
+        `No se ha podido enviar el mensaje de bienvenida al canal con ID: ${GENERAL}. ${reason}`
+      );
+      return;
+    }
+
+    const newMembers = Array.from(dbUserIds)
+      // Finds users on the server from IDs stored in the database
+      .map((userId) => member.client.users.cache.get(userId))
+      // Filter users who are not in the server
+      .filter((newUser): newUser is User => Boolean(newUser))
+      // Returns a comma-separated list of mentionable usernames.
+      .join(", ");
+
+    // Sends a message after X number of members have joined the server.
+    await channel.send({
+      content: `Welcome ${newMembers}!`,
+      embeds: [
+        {
+          color: 0x00c29d,
+          title: "",
+          thumbnail: {
+            url: "https://res.cloudinary.com/sebasec/image/upload/v1614807768/Fec_with_Shadow_jq8ll8.png",
+          },
+          description: `Pueden presentarse en este canal, ${GENERAL} y leer el ${USER_GUIDE} para conocer cómo participar en nuestra comunidad ${EMOJIS.impostor}`,
+        },
+      ],
+    });
   },
 } satisfies DiscordEvent;
 
@@ -130,7 +136,12 @@ async function getList() {
  * @param delta
  * @returns
  */
-async function updateList(list_users: string[], users: number, time_zero: number, delta: number) {
+async function updateList(
+  list_users: string[],
+  users: number,
+  time_zero: number,
+  delta: number
+) {
   try {
     const doc = await updateUserList({
       new_users_id: list_users,
