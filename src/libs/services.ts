@@ -13,7 +13,6 @@ export async function patchWarning({
   forgiveCause: string | null;
   menteeId: string;
 }) {
-  throw Error("// TODO: Delete me.");
   const response = await fetch(`${AWS_URL}/warning/mentee/${menteeId}`, {
     method: "PATCH",
     headers: AWS_HEADERS,
@@ -44,7 +43,6 @@ export async function postWarning({
   menteeUsername: string;
   warnCause: string | null;
 }) {
-  throw Error("// TODO: Delete me.");
   const response = await fetch(`${AWS_URL}/matebot/warning`, {
     method: "POST",
     headers: AWS_HEADERS,
@@ -76,7 +74,6 @@ export async function postMentorship({
   menteeId: string;
   menteeUsername: string;
 }) {
-  throw Error("// TODO: Delete me.");
   const response = await fetch(`${AWS_URL}/matebot/mentorship`, {
     method: "POST",
     headers: AWS_HEADERS,
