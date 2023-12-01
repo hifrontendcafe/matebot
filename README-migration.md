@@ -28,10 +28,6 @@ Information about `/mentee` commands. Subcommands ending with **?** are optional
 
   Give a penalty to a mentee with the reason "Ausencia a la mentoría", you can additionally add a custom reason
 
-- **`/remove penalty`** `@username` `<reason?>`
-
-  Remove a penalty from a mentee, additionally you can add a custom reason.
-
 - **`/mentee help`**
 
 ### Info Command Guide
@@ -69,14 +65,17 @@ To install the project locally, follow these steps:
 
 To run the project locally, execute:
 
+> [!NOTE]
+> The first time running may require re-execute the command.
+
 ```bash
 pnpm run dev
 ```
 
 The development server should reload on every file change.
 
-> [!NOTE]
-> The first time running may require re-launch the command.
+> [!IMPORTANT]
+> After creating new commands or making changes on any of the commands structure you'll need to [redeploy them](#deployingregistering-commands).
 
 <details>
   <summary><h4>Creating New Commands</h4></summary></br>
@@ -91,17 +90,6 @@ The command file should export both `data` and `execute` [as seem here](src/comm
 ---
 
 </details>
-
-#### Registering/Deploying Commands
-
-After creating new commands or making changes on any of the commands structure _(not the `execute` function logic)_, you will need to run:
-
-```bash
-pnpm run register
-```
-
-> [!WARNING]
-> If the `NODE_ENV` variable is set to `"production"`, it will deploy the commands **globally** to all servers were the bot is already invited.
 
 <details>
   <summary><h4>Handle Discord Events</h4></summary>
@@ -119,13 +107,29 @@ The event file should export both `data` and `execute` from each event file, [as
 
 ### Deployment
 
-```bash
-pnpm run build
-```
+Deployment is done automatically with GitHub Actions; If you need to redeploy it manually, follow these steps:
+
+1. Install the Fly.io CLI [from their website](https://fly.io/docs/hands-on/install-flyctl/)
+2. Authenticate with FrontendCafe's Fly.io account.
+   ```bash
+   flyctl auth login
+   ```
+3. Execute the deploy command
+
+   ```bash
+   flyctl deploy --ha=false
+   ```
+
+#### Deploying/Registering Commands
+
+After creating new commands or making changes on any of the commands structure _(not the `execute` function logic)_, you will need to run:
 
 ```bash
-pnpm run start
+pnpm run register
 ```
+
+> [!WARNING]
+> If the `NODE_ENV` variable is set to `"production"`, it will deploy the commands **globally** to all servers were the bot is already invited.
 
 ## License
 
