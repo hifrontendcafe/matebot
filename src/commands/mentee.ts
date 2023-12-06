@@ -101,7 +101,6 @@ const confirmationButtons = new ActionRowBuilder<ButtonBuilder>().setComponents(
 
 export async function execute(interaction: Interaction<CacheType>) {
   if (!interaction.isChatInputCommand()) return;
-
   const subcommand = interaction.options.getSubcommand();
 
   if (COMMANDS.HELP === subcommand) {
@@ -173,43 +172,81 @@ export async function execute(interaction: Interaction<CacheType>) {
 
   // Confirms a mentorship appointment.
   if (COMMANDS.CONFIRM === subcommand) {
-    try {
-      await interaction.deferReply({ ephemeral: true });
-
-      const data = await postMentorship({
-        authorId: interaction.user.id,
-        authorUsername: interaction.user.displayName,
-        menteeId: member.id,
-        menteeUsername: member.displayName,
-      });
-
-      if (data["code"] === "-118") {
-        await interaction.channel?.send(`
-          > :no_entry:  **Solicitud de mentoría rechazada**
-          > ¡Hola! ${member} la mentoría no se llevara a cabo ya que anteriormente has sido penalizado por no cumplir el código de conducta. Si crees que fue un error, comunícate con ${ADMIN_MENTORS}.
-          > 
-          > _ID del usuario: ${member.id}_
-        `);
-      } else if (data["code"] === "100") {
-        await interaction.channel?.send(`
-          > :white_check_mark:  **Solicitud de mentoría exitosa**
-          > ¡Hola! La mentoría de ${member} ha sido registrada satisfactoriamente.
-          > Tu mentor asignado es ${interaction.user}
-          > 
-          > _ID del usuario: ${member.id}_
-        `);
-      } else {
-        throw data;
-      }
-    } catch (err) {
-      await interaction.editReply(`
-        > :warning:  **Error**
-        > ¡Hola! Ocurrió un problema al registrar la mentoría, por favor comunícate con ${ADMIN_MENTORS}.
+    const response = await interaction.reply({
+      ephemeral: true,
+      content: `
+        > ¿Deseas confirmar la mentoria de ${member}?
         > 
         > _ID del usuario: ${member.id}_
-      `);
+      `,
+      components: [confirmationButtons],
+    });
 
-      return console.error(err);
+    try {
+      const confirmation = await response.awaitMessageComponent({
+        filter: (i) => i.user.id === interaction.user.id,
+        time: 60000,
+      });
+
+      if (ACTION_CONFIRM === confirmation.customId) {
+        try {
+          const data = await postMentorship({
+            authorId: interaction.user.id,
+            authorUsername: interaction.user.displayName,
+            menteeId: member.id,
+            menteeUsername: member.displayName,
+          });
+
+          if (data["code"] === "-118") {
+            await interaction.channel?.send(`
+                > :no_entry:  **Solicitud de mentoría rechazada**
+                > ¡Hola! ${member} la mentoría no se llevara a cabo ya que anteriormente has sido penalizado por no cumplir el código de conducta. Si crees que fue un error, comunícate con ${ADMIN_MENTORS}.
+                > 
+                > _ID del usuario: ${member.id}_
+              `);
+          } else if (data["code"] === "100") {
+            await interaction.channel?.send(`
+                > :white_check_mark:  **Solicitud de mentoría exitosa**
+                > ¡Hola! La mentoría de ${member} ha sido registrada satisfactoriamente.
+                > Tu mentor asignado es ${interaction.user}
+                > 
+                > _ID del usuario: ${member.id}_
+              `);
+          } else {
+            throw data;
+          }
+        } catch (err) {
+          await confirmation.update({
+            content: `
+              > :warning:  **Error**
+              > ¡Hola! Ocurrió un problema al registrar la mentoría, por favor comunícate con ${ADMIN_MENTORS}.
+              > 
+              > _ID del usuario: ${member.id}_
+            `,
+            components: [],
+          });
+
+          return console.error(err);
+        }
+      } else if (ACTION_CANCEL === confirmation.customId) {
+        await confirmation.update({
+          content: `
+            > Acción cancelada, no se ha registrardo la mentoría a ${member}
+            > 
+            > _ID del usuario: ${member.id}_
+          `,
+          components: [],
+        });
+        return;
+      }
+
+      // Confirmation timeouts.
+    } catch {
+      await interaction.editReply({
+        content: "> No se ha recibido una confirmación en 1 minuto.",
+        components: [],
+      });
+      return;
     }
 
     return await interaction.deleteReply();
@@ -291,7 +328,7 @@ export async function execute(interaction: Interaction<CacheType>) {
 
     const response = await interaction.reply({
       ephemeral: true,
-      content: `Confirma si deseas aplicar una penalización a ${member}${
+      content: `> Confirma si deseas aplicar una penalización a ${member}${
         reason ? `, con motivo: "${reason}"?` : ""
       }`,
       components: [confirmationButtons],
@@ -348,19 +385,18 @@ export async function execute(interaction: Interaction<CacheType>) {
         }
       } else if (ACTION_CANCEL === confirmation.customId) {
         await confirmation.update({
-          content: `Acción cancelada, no se ha aplicado una penalización a ${member}`,
+          content: `> Acción cancelada, no se ha aplicado una penalización a ${member}`,
           components: [],
         });
         return;
       }
 
       // Confirmation timeouts.
-    } catch (err) {
+    } catch {
       await interaction.editReply({
-        content: "No se ha recibido una confirmación en 1 minuto.",
+        content: "> No se ha recibido una confirmación en 1 minuto.",
         components: [],
       });
-      return console.log(err);
     }
   }
 }
