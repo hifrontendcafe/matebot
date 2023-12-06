@@ -13,7 +13,7 @@ export async function patchWarning({
   forgiveCause: string | null;
   menteeId: string;
 }) {
-  const response = await fetch(`${AWS_URL}/warning/mentee/${menteeId}`, {
+  const response = await fetch(`${AWS_URL}warning/mentee/${menteeId}`, {
     method: "PATCH",
     headers: AWS_HEADERS,
     body: JSON.stringify({
@@ -43,7 +43,7 @@ export async function postWarning({
   menteeUsername: string;
   warnCause: string | null;
 }) {
-  const response = await fetch(`${AWS_URL}/matebot/warning`, {
+  const response = await fetch(`${AWS_URL}matebot/warning`, {
     method: "POST",
     headers: AWS_HEADERS,
     body: JSON.stringify({
@@ -74,7 +74,7 @@ export async function postMentorship({
   menteeId: string;
   menteeUsername: string;
 }) {
-  const response = await fetch(`${AWS_URL}/matebot/mentorship`, {
+  const response = await fetch(`${AWS_URL}matebot/mentorship`, {
     method: "POST",
     headers: AWS_HEADERS,
     body: JSON.stringify({
