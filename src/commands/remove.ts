@@ -35,7 +35,7 @@ const ACTION_CANCEL = "cancel";
 const confirm = new ButtonBuilder()
   .setCustomId(ACTION_CONFIRM)
   .setLabel("Confirmar")
-  .setStyle(ButtonStyle.Danger);
+  .setStyle(ButtonStyle.Primary);
 const cancel = new ButtonBuilder()
   .setCustomId(ACTION_CANCEL)
   .setLabel("Cancelar")
