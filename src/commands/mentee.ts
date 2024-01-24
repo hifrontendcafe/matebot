@@ -46,7 +46,7 @@ export const data = new SlashCommandBuilder()
     subcommand
       .setName(COMMANDS.REMINDER)
       .setDescription(
-        'Asigna el rol "Mentees" y, opcionalmente, enviar un recordatorio al mentee sobre los minutos y/o canal.'
+        'Asigna el rol "Mentees" y, opcionalmente, enviar un recordatorio con los minutos y/o canal'
       )
       .addUserOption(userToMention)
       .addIntegerOption((option) =>
