@@ -25,13 +25,17 @@ export const data = new SlashCommandBuilder()
   .addSubcommand((subcommand) =>
     subcommand
       .setName(COMMAND.Q)
-      .setDescription("Enviar tips para realizar preguntas")
+      .setDescription(
+        "Proporcionar a un usuario específico consejos para realizar preguntas."
+      )
       .addUserOption(userToMention)
   )
   .addSubcommand((subcommand) =>
     subcommand
       .setName(COMMAND.M)
-      .setDescription("Enviar aviso sobre comandos de bots de música")
+      .setDescription(
+        "Alertar a un usuario específico sobre los comandos del bot de música."
+      )
       .addUserOption(userToMention)
   );
 

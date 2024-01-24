@@ -26,7 +26,7 @@ export const data = new SlashCommandBuilder()
   .addSubcommand((subcommand) =>
     subcommand
       .setName(COMMANDS.PENALTY)
-      .setDescription("Remueve una penalización a un mentee")
+      .setDescription("Elimina la penalización a un mentee")
       .addUserOption(userToMention)
   );
 

@@ -2,7 +2,9 @@ import { CacheType, Interaction, SlashCommandBuilder } from "discord.js";
 
 export const data = new SlashCommandBuilder()
   .setName("help")
-  .setDescription("Lista de comandos disponibles.");
+  .setDescription(
+    "Ofrece información completa sobre todos los comandos disponibles."
+  );
 
 export async function execute(interaction: Interaction<CacheType>) {
   if (!interaction.isChatInputCommand()) return;

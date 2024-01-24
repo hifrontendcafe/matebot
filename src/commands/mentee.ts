@@ -32,13 +32,13 @@ export const data = new SlashCommandBuilder()
   .addSubcommand((subcommand) =>
     subcommand
       .setName(COMMANDS.HELP)
-      .setDescription("Obtén información sobre los comandos `/mentee`")
+      .setDescription("Proporciona información sobre los comandos `/mentee`.")
   )
   .addSubcommand((subcommand) =>
     subcommand
       .setName(COMMANDS.CONFIRM)
       .setDescription(
-        "Confirma una mentoría y a la vez verifica si ese usuario tiene penalizaciones."
+        "Confirmar una mentoría y al mismo tiempo verifica si el usuario tiene alguna penalización."
       )
       .addUserOption(userToMention)
   )
@@ -46,7 +46,7 @@ export const data = new SlashCommandBuilder()
     subcommand
       .setName(COMMANDS.REMINDER)
       .setDescription(
-        "Agrega rol Mentees y opcionalmente envía un recordatorio al usuario."
+        'Asigna el rol "Mentees" y, opcionalmente, enviar un recordatorio al mentee sobre los minutos y/o canal.'
       )
       .addUserOption(userToMention)
       .addIntegerOption((option) =>
@@ -65,7 +65,7 @@ export const data = new SlashCommandBuilder()
     subcommand
       .setName(COMMANDS.CONCLUDE)
       .setDescription(
-        "Concluye una mentoría removiendo rol Mentees y enviando el formulario de feedback."
+        'Concluye la mentoría y envía el formulario de feedback. Esto también removerá el rol "Mentees".'
       )
       .addUserOption(userToMention)
   )
@@ -73,7 +73,7 @@ export const data = new SlashCommandBuilder()
     subcommand
       .setName(COMMANDS.PENALTY)
       .setDescription(
-        "Da una penalización a un mentee por ausencia, adicionalmente puedes agregar un motivo"
+        "Penaliza a un mentee por ausencia. También puede agregar un motivo personalizado si es necesario."
       )
       .addUserOption(userToMention)
       .addStringOption((option) =>
