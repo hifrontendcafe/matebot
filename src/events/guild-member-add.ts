@@ -12,26 +12,30 @@ export default {
   name: Events.GuildMemberAdd,
   async execute(member: GuildMember) {
     // Direct messages new members with a welcome message.
-    await member.send(
-      `Hola, te damos la bienvenida a FrontendCafé!!
-
-      Somos una comunidad de personas interesadas en tecnología y ciencias informáticas. Conversamos sobre lenguajes de programación, diseño web, infraestructura, compartimos dudas y tratamos de resolverlas en conjunto.
-      Además, nos organizamos en grupos para estudiar, hacer proyectos en equipo y practicar en inglés para perfeccionarnos. Tenemos un espacio de coworking, también nos vamos de after office y jugamos jueguitos!
-
-      Aquí abajo dejamos información que **es necesaria que revises antes de comenzar a participar**, yaque es muy importante que contribuyamos a mantener este server como un espacio seguro, amigable y divertido para cualquier persona que participe.
-
-      - ${CODE_OF_CONDUCT}
-      - ${USER_GUIDE}
-
-      Por favor, al hacer una consulta dentro del server, intenta incluir la mayor cantidad de datos posibles sobre qué estás intentando, qué errores encuentras y qué quieres lograr para que podamos ayudarte de la mejor manera posible.
-
-      Si tienes dudas de dónde publicar la pregunta puedes consultar en ${GENERAL} y te orientarán. Asimismo, puedes usar el buscador, situado arriba a la derecha, para verificar que tu pregunta no haya sido respondida anteriormente.
-
-      Nos encantaría que pases por ${UNKNOWN} y nos cuentes algo de ti :slight_smile:
-
-      Saludos!
-      *El Staff de FrontendCafé*`.replace(/  +/g, "")
-    );
+    try {
+      await member.send(
+        `Hola, te damos la bienvenida a FrontendCafé!!
+  
+        Somos una comunidad de personas interesadas en tecnología y ciencias informáticas. Conversamos sobre lenguajes de programación, diseño web, infraestructura, compartimos dudas y tratamos de resolverlas en conjunto.
+        Además, nos organizamos en grupos para estudiar, hacer proyectos en equipo y practicar en inglés para perfeccionarnos. Tenemos un espacio de coworking, también nos vamos de after office y jugamos jueguitos!
+  
+        Aquí abajo dejamos información que **es necesaria que revises antes de comenzar a participar**, yaque es muy importante que contribuyamos a mantener este server como un espacio seguro, amigable y divertido para cualquier persona que participe.
+  
+        - ${CODE_OF_CONDUCT}
+        - ${USER_GUIDE}
+  
+        Por favor, al hacer una consulta dentro del server, intenta incluir la mayor cantidad de datos posibles sobre qué estás intentando, qué errores encuentras y qué quieres lograr para que podamos ayudarte de la mejor manera posible.
+  
+        Si tienes dudas de dónde publicar la pregunta puedes consultar en ${GENERAL} y te orientarán. Asimismo, puedes usar el buscador, situado arriba a la derecha, para verificar que tu pregunta no haya sido respondida anteriormente.
+  
+        Nos encantaría que pases por ${UNKNOWN} y nos cuentes algo de ti :slight_smile:
+  
+        Saludos!
+        *El Staff de FrontendCafé*`.replace(/  +/g, "")
+      );
+    } catch {
+      console.log(`Cannot send DMs to this user.`);
+    }
 
     const storedUsers = await getList();
     if (!storedUsers) {
@@ -67,7 +71,7 @@ export default {
     await updateList([], dbUserCount, timeFinal, newDelta);
 
     // Find a specific channel by the ID.
-    const channel = member.client.channels.cache.get(GENERAL);
+    const channel = member.client.channels.cache.get(CHANNELS.GENERAL);
     if (!channel || !channel.isTextBased()) {
       const reason =
         channel && !channel.isTextBased()
