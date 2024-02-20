@@ -1,3 +1,4 @@
+import { FAUNADB_USER_COLLECTION_ID } from "../libs/environment.js";
 import { Ref, client, query } from "./client.js";
 
 type UserCollectionData = {
@@ -15,13 +16,13 @@ type GetUserList = {
 
 export async function getUserList(): Promise<GetUserList> {
   return await client.query<GetUserList>(
-    query.Get(query.Ref(query.Collection("Users"), "319190874626982481"))
+    query.Get(query.Ref(query.Collection("Users"), FAUNADB_USER_COLLECTION_ID))
   );
 }
 
 export async function updateUserList(data: UserCollectionData) {
   return await client.query<GetUserList>(
-    query.Update(query.Ref(query.Collection("Users"), "319190874626982481"), {
+    query.Update(query.Ref(query.Collection("Users"), FAUNADB_USER_COLLECTION_ID), {
       data,
     })
   );
