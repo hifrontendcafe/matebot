@@ -6,7 +6,6 @@ import { getUserList, updateUserList } from "../database/queries.js";
 const GENERAL = channelMention(CHANNELS.GENERAL);
 const USER_GUIDE = channelMention(CHANNELS.USER_GUIDE);
 const CODE_OF_CONDUCT = channelMention(CHANNELS.CODE_OF_CONDUCT);
-const UNKNOWN = channelMention(CHANNELS.UNKNOWN);
 
 export default {
   name: Events.GuildMemberAdd,
@@ -27,8 +26,6 @@ export default {
         Por favor, al hacer una consulta dentro del server, intenta incluir la mayor cantidad de datos posibles sobre qué estás intentando, qué errores encuentras y qué quieres lograr para que podamos ayudarte de la mejor manera posible.
   
         Si tienes dudas de dónde publicar la pregunta puedes consultar en ${GENERAL} y te orientarán. Asimismo, puedes usar el buscador, situado arriba a la derecha, para verificar que tu pregunta no haya sido respondida anteriormente.
-  
-        Nos encantaría que pases por ${UNKNOWN} y nos cuentes algo de ti :slight_smile:
   
         Saludos!
         *El Staff de FrontendCafé*`.replace(/  +/g, "")
