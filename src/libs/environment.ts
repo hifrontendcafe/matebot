@@ -10,16 +10,12 @@ const envVariables = z.object({
   GUILD_ID: z
     .string()
     .trim()
-    .min(
-      1,
-      "Required in development to deploy the commands for a specific Discord server"
-    ),
+    .min(1, "Required in development to deploy the commands for a specific Discord server"),
   AWS_URL: z.string().trim().url().endsWith("/"),
   AWS_API_KEY: z.string().trim().min(1),
   FAUNADB_SECRET_KEY: z.string().trim().min(1),
-  NODE_ENV: z
-    .enum(["development", "production", "test"])
-    .default("development"),
+  FAUNADB_USER_COLLECTION_ID: z.string().trim().min(1),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 });
 
 try {
@@ -44,4 +40,5 @@ export const {
   AWS_URL,
   AWS_API_KEY,
   FAUNADB_SECRET_KEY,
+  FAUNADB_USER_COLLECTION_ID,
 } = process.env;
