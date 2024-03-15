@@ -81,13 +81,19 @@ export default {
       return;
     }
 
-    const newMembers = Array.from(dbUserIds)
-      // Finds users on the server from IDs stored in the database
-      .map((userId) => member.client.users.cache.get(userId))
-      // Filter users who are not in the server
-      .filter((newUser): newUser is User => Boolean(newUser))
-      // Returns a comma-separated list of mentionable usernames.
-      .join(", ");
+    // Finds members on the server from IDs stored in the database.
+    const guildMembers = Array.from(dbUserIds).map((userId) =>
+      member.guild.members.fetch(userId)
+    );
+
+    // Filters existing members from a set of guild member promises
+    const existingMembers = (await Promise.allSettled(guildMembers)).filter(
+      <T>(p: PromiseSettledResult<T>): p is PromiseFulfilledResult<T> =>
+        p.status === "fulfilled"
+    );
+
+    // Returns a comma-separated list of mentionable usernames.
+    const newMembers = existingMembers.map((r) => r.value).join(", ");
 
     // Sends a message after X number of members have joined the server.
     await channel.send({
