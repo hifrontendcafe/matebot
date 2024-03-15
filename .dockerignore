@@ -2,7 +2,8 @@ node_modules/
 dist/
 .env
 .vscode
-__pycache__/
-.ignore/
-venv/
-env/
+.github
+.git
+.gitignore
+*.md
+
