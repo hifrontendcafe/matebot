@@ -1,0 +1,30 @@
+{
+  "name": "matebot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "register": "node dist/deploy-commands.js",
+    "dev": "concurrently --names 'TSC,Node' -c 'blue,green' 'tsc --watch' 'node --watch dist'",
+    "build": "tsc --build",
+    "start": "node dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.13.0",
+    "dotenv": "^16.3.1",
+    "faunadb": "^4.8.0",
+    "glob": "^10.3.10",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.9",
+    "concurrently": "^8.2.2",
+    "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}
