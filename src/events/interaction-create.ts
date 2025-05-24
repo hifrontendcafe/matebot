@@ -45,4 +45,4 @@ export default {
       }
     }
   },
-} satisfies DiscordEvent;
+} satisfies DiscordEvent<Interaction<CacheType>>;

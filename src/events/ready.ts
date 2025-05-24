@@ -7,4 +7,4 @@ export default {
   execute(client: Client<true>) {
     console.log(`Ready! Logged in as ${client.user.tag}`);
   },
-} satisfies DiscordEvent;
+} satisfies DiscordEvent<Client<true>>;
