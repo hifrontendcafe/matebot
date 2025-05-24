@@ -5,6 +5,7 @@ import {
   CacheType,
   Interaction,
   SlashCommandBuilder,
+  TextChannel,
   roleMention,
 } from "discord.js";
 import { ROLES, TARGET_OPTIONS } from "../libs/constants.js";
@@ -87,15 +88,16 @@ export async function execute(interaction: Interaction<CacheType>) {
 
     if (ACTION_CONFIRM === confirmation.customId) {
       try {
-        const data = await patchWarning({
+        const data = (await patchWarning({
           authorId: interaction.user.id,
           authorUsername: interaction.user.displayName,
           forgiveCause: reason,
           menteeId: member.id,
-        });
+        })) as { code: string };
 
         if (data["code"] === "303") {
-          await interaction.channel?.send(`
+          // TODO: check if this is a text channel
+          await (interaction.channel as TextChannel)?.send(`
             > :point_right:  **Se ha removido la penalización de ${member}**
             > 
             > _ID del usuario: ${member.id}_

@@ -4,8 +4,10 @@ import {
   ButtonStyle,
   CacheType,
   ChannelType,
+  GuildMember,
   Interaction,
   SlashCommandBuilder,
+  TextChannel,
   roleMention,
 } from "discord.js";
 import { ROLES, TARGET_OPTIONS } from "../libs/constants.js";
@@ -190,22 +192,24 @@ export async function execute(interaction: Interaction<CacheType>) {
 
       if (ACTION_CONFIRM === confirmation.customId) {
         try {
-          const data = await postMentorship({
+          const data = (await postMentorship({
             authorId: interaction.user.id,
             authorUsername: interaction.user.displayName,
             menteeId: member.id,
             menteeUsername: member.displayName,
-          });
+          })) as { code: string };
 
           if (data["code"] === "-118") {
-            await interaction.channel?.send(`
+            // TODO: check if this is a text channel
+            await (interaction.channel as TextChannel)?.send(`
                 > :no_entry:  **Solicitud de mentoría rechazada**
                 > ¡Hola! ${member} la mentoría no se llevara a cabo ya que anteriormente has sido penalizado por no cumplir el código de conducta. Si crees que fue un error, comunícate con ${ADMIN_MENTORS}.
                 > 
                 > _ID del usuario: ${member.id}_
               `);
           } else if (data["code"] === "100") {
-            await interaction.channel?.send(`
+            // TODO: check if this is a text channel
+            await (interaction.channel as TextChannel)?.send(`
                 > :white_check_mark:  **Solicitud de mentoría exitosa**
                 > ¡Hola! La mentoría de ${member} ha sido registrada satisfactoriamente.
                 > Tu mentor asignado es ${interaction.user}
@@ -276,21 +280,22 @@ export async function execute(interaction: Interaction<CacheType>) {
 
     // Sends a remainder with the estimated time and assigned channel.
     if (time && channel) {
-      return await interaction.channel?.send(`
+      // TODO: check if this is a text channel
+      return await (interaction.channel as TextChannel)?.send(`
         > :alarm_clock:  **Recordatorio**
         > Hola ${member}, en ${time} ${minutes} ${interaction.user} te espera en la sala de voz ${channel} <:fecfan:756224742771654696>
       `);
     }
     // Sends a remainder with the estimated time.
     if (time && !channel) {
-      return await interaction.channel?.send(`
+      return await (interaction.channel as TextChannel)?.send(`
         > :alarm_clock:  **Recordatorio**
         > Hola ${member}, ${interaction.user} te espera en ${time} ${minutes}  <:fecfan:756224742771654696>
       `);
     }
     // Sends a remainder with the assigned channel.
     if (!time && channel) {
-      return await interaction.channel?.send(`
+      return await (interaction.channel as TextChannel)?.send(`
         > :alarm_clock:  **Recordatorio**
         > Hola ${member}, ${interaction.user} te espera en la sala de voz ${channel} <:fecfan:756224742771654696>
       `);
@@ -314,7 +319,7 @@ export async function execute(interaction: Interaction<CacheType>) {
       content: `> Se ha removido el rol ${MENTEES} de ${member}.`,
     });
 
-    await interaction.channel?.send(`
+    await (interaction.channel as TextChannel)?.send(`
       > :pray: ${member} esperamos que hayas tenido una buena experiencia, recuerda darnos feedback para continuar mejorando!
       > https://go.frontend.cafe/feedback
     `);
@@ -342,7 +347,8 @@ export async function execute(interaction: Interaction<CacheType>) {
 
       if (ACTION_CONFIRM === confirmation.customId) {
         try {
-          const [data] = await Promise.all([
+          // TODO: type-safe that data is actually an object with a code property
+          const [data] = (await Promise.all([
             postWarning({
               authorId: interaction.user.id,
               authorUsername: interaction.user.displayName,
@@ -351,10 +357,10 @@ export async function execute(interaction: Interaction<CacheType>) {
               warnCause: reason,
             }),
             member.roles.remove(role),
-          ]);
+          ])) as [{ code: string }, GuildMember];
 
           if (data["code"] === "300") {
-            await interaction.channel?.send(`
+            await (interaction.channel as TextChannel)?.send(`
               > :triangular_flag_on_post:  **${member} ha sido penalizado/a**
               > 
               > _**Motivo**: ${reason || "Ausencia a la mentoría"}_
