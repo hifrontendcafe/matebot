@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { ZodError, z } from "zod";
 
-export const isDev = process.env.NODE_ENV !== "production";
+const isDev = process.env.NODE_ENV !== "production";
 export const isProd = !isDev;
 
 const envVariables = z.object({
@@ -31,7 +31,13 @@ try {
 }
 
 declare global {
+  /* eslint-disable-next-line @typescript-eslint/no-namespace --
+   * This is a legit use of namespaces to extend the ProcessEnv interface
+   */
   namespace NodeJS {
+    /* eslint-disable-next-line @typescript-eslint/no-empty-object-type --
+     * This is a legit use of namespaces to extend the ProcessEnv interface
+     */
     interface ProcessEnv extends z.infer<typeof envVariables> {}
   }
 }
