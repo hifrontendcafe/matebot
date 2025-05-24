@@ -1,8 +1,15 @@
+# Dependency directories
 node_modules/
-dist/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# dotenv environment variable files
 .env
-.vscode
-__pycache__/
-.ignore/
-venv/
-env/
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# dist
+dist/
