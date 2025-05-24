@@ -11,7 +11,7 @@
     "prepare": "husky",
     "check": "tsc --noEmit",
     "knip": "knip",
-    "lint": "pnpm run check && pnpm run knip"
+    "lint": "eslint ."
   },
   "keywords": [],
   "author": "",
@@ -23,11 +23,14 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@eslint/js": "^9.27.0",
     "@types/node": "^20.8.9",
     "concurrently": "^8.2.2",
+    "eslint": "^9.27.0",
     "husky": "^9.1.7",
     "knip": "^5.58.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "typescript-eslint": "^8.32.1"
   },
   "engines": {
     "node": "22.x"
