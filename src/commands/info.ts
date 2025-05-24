@@ -2,6 +2,7 @@ import {
   CacheType,
   Interaction,
   SlashCommandBuilder,
+  TextChannel,
   channelMention,
   hyperlink,
 } from "discord.js";
@@ -51,8 +52,11 @@ export async function execute(interaction: Interaction<CacheType>) {
     });
   }
 
+  // TODO: check if this is a text channel
+  const channel = interaction.channel as TextChannel;
+
   if (COMMAND.Q === subcommand) {
-    await interaction.channel.send({
+    await channel.send({
       target: user,
       content: `Hola ${user}, te dejamos algunos tips para realizar tu pregunta`,
       embeds: [
@@ -73,7 +77,7 @@ export async function execute(interaction: Interaction<CacheType>) {
 
     //
   } else if (COMMAND.M === subcommand) {
-    await interaction.channel.send({
+    await channel.send({
       target: user,
       content: `¡Hola ${user}!`,
       embeds: [

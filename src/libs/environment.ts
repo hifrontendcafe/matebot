@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { ZodError, z } from "zod";
 
-export const isDev = process.env.NODE_ENV !== "production";
+const isDev = process.env.NODE_ENV !== "production";
 export const isProd = !isDev;
 
 const envVariables = z.object({
@@ -10,12 +10,15 @@ const envVariables = z.object({
   GUILD_ID: z
     .string()
     .trim()
-    .min(1, "Required in development to deploy the commands for a specific Discord server"),
+    .min(
+      1,
+      "Required in development to deploy the commands for a specific Discord server"
+    ),
   AWS_URL: z.string().trim().url().endsWith("/"),
   AWS_API_KEY: z.string().trim().min(1),
-  FAUNADB_SECRET_KEY: z.string().trim().min(1),
-  FAUNADB_USER_COLLECTION_ID: z.string().trim().min(1),
-  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  NODE_ENV: z
+    .enum(["development", "production", "test"])
+    .default("development"),
 });
 
 try {
@@ -28,17 +31,16 @@ try {
 }
 
 declare global {
+  /* eslint-disable-next-line @typescript-eslint/no-namespace --
+   * This is a legit use of namespaces to extend the ProcessEnv interface
+   */
   namespace NodeJS {
+    /* eslint-disable-next-line @typescript-eslint/no-empty-object-type --
+     * This is a legit use of namespaces to extend the ProcessEnv interface
+     */
     interface ProcessEnv extends z.infer<typeof envVariables> {}
   }
 }
 
-export const {
-  DISCORD_TOKEN,
-  CLIENT_ID,
-  GUILD_ID,
-  AWS_URL,
-  AWS_API_KEY,
-  FAUNADB_SECRET_KEY,
-  FAUNADB_USER_COLLECTION_ID,
-} = process.env;
+export const { DISCORD_TOKEN, CLIENT_ID, GUILD_ID, AWS_URL, AWS_API_KEY } =
+  process.env;

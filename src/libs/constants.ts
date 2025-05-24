@@ -1,16 +1,9 @@
-import { formatEmoji } from "discord.js";
-
 export const CHANNELS = {
   TEST: "861980330201841686",
   USER_GUIDE: "747925827265495111",
   CODE_OF_CONDUCT: "748183026244255824",
   GENERAL: "594935077637718027",
   MUSIC: "1072505355839488081",
-} as const;
-
-export const EMOJIS = {
-  impostor: formatEmoji("755971090471321651"),
-  fec_star: formatEmoji("755451362950512660"),
 } as const;
 
 export const ROLES = {
@@ -27,16 +20,3 @@ export const TARGET_OPTIONS = {
   MINUTES: "minutes",
   REASON: "reason",
 } as const;
-
-export const EMOJI_NUMBERS = [
-  "1️⃣",
-  "2️⃣",
-  "3️⃣",
-  "4️⃣",
-  "5️⃣",
-  "6️⃣",
-  "7️⃣",
-  "8️⃣",
-  "9️⃣",
-  "🔟",
-] as const;
