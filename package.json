@@ -22,6 +22,7 @@
   "devDependencies": {
     "@types/node": "^20.8.9",
     "concurrently": "^8.2.2",
+    "knip": "^5.58.0",
     "typescript": "^5.2.2"
   },
   "engines": {

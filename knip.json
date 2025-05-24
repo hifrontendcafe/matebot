@@ -1,0 +1,9 @@
+{
+  "entry": [
+    "src/index.ts",
+    "src/commands/**/*.ts",
+    "src/events/**/*.ts",
+    "src/deploy-commands.ts"
+  ],
+  "project": ["**/*.{js,ts,.d.ts}"]
+}
