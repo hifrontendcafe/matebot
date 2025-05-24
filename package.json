@@ -7,7 +7,11 @@
     "register": "node dist/deploy-commands.js",
     "dev": "concurrently --names 'TSC,Node' -c 'blue,green' 'tsc --watch' 'node --watch dist'",
     "build": "tsc --build",
-    "start": "node dist"
+    "start": "node dist",
+    "prepare": "husky",
+    "check": "tsc --noEmit",
+    "knip": "knip",
+    "lint": "pnpm run check && pnpm run knip"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +25,7 @@
   "devDependencies": {
     "@types/node": "^20.8.9",
     "concurrently": "^8.2.2",
+    "husky": "^9.1.7",
     "knip": "^5.58.0",
     "typescript": "^5.2.2"
   },
