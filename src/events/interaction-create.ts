@@ -16,6 +16,19 @@ export default {
     }
 
     try {
+      if (
+        !command ||
+        !(typeof command === "object") ||
+        command === null ||
+        !("execute" in command) ||
+        typeof command.execute !== "function"
+      ) {
+        console.error(
+          `Command "${interaction.commandName}" is missing an execute function.`
+        );
+        return;
+      }
+
       await command.execute(interaction);
     } catch (error) {
       console.error(error);
