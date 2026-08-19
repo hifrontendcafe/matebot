@@ -7,6 +7,9 @@ primary_region = "mia"
 
 [build]
 
+[env]
+  CI = "true"
+
 [http_service]
   internal_port = 3000
   force_https = true
